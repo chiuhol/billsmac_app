@@ -12,6 +12,7 @@ import 'Common/local/LocalStorage.dart';
 import 'Common/style/colors.dart';
 import 'Common/util/ServiceLocator.dart';
 import 'Page/LoginPage.dart';
+import 'package:apifm/apifm.dart' as Apifm;
 
 ///@Author:chiuhol
 ///2019-12-4
@@ -21,6 +22,7 @@ void main() => realRunApp();
 void realRunApp() async {
   // 注册服务
   setupLocator();
+  Apifm.init("72127a0f02f16488e7ccfa8cf76866be");
   runApp(MyApp());
 }
 

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Page/LoginPage.dart';
 import 'package:billsmac_app/Widget/SubprojectWidget.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -168,17 +169,23 @@ class _SettingMainPageState extends State<SettingMainPage> {
                   SubprojectWidget(
                       title: '联系我们', icon: 0xe607, iconColor: MyColors.grey_e4, subTitle: _contactUs,),
                   SizedBox(height: 24),
-                  Container(
-                    color: MyColors.white_fe,
-                      padding: EdgeInsets.only(top: 18, bottom: 18),
-                    child: Center(
-                      child: Text(
-                        "退出登录",
-                        style: TextStyle(
-                          color: MyColors.red_34,
-                          fontSize: MyFonts.f_15
+                  GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: (){
+                      CommonUtil.openPage(context, LoginPage());
+                    },
+                    child: Container(
+                        color: MyColors.white_fe,
+                        padding: EdgeInsets.only(top: 18, bottom: 18),
+                        child: Center(
+                            child: Text(
+                                "退出登录",
+                                style: TextStyle(
+                                    color: MyColors.red_34,
+                                    fontSize: MyFonts.f_15
+                                )
+                            )
                         )
-                      )
                     )
                   )
                 ]))));

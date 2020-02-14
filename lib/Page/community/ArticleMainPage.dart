@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:billsmac_app/Common/CommonInsert.dart';
@@ -7,6 +8,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'ArticleDetailPage.dart';
 
@@ -24,6 +27,8 @@ class _ArticleMainPageState extends State<ArticleMainPage> {
   List<dynamic> _storiesLst = [];
   List<dynamic> _topStoriesLst = [];
   int _pageIndex = 1;
+
+  final String url = "https://news-at.zhihu.com/api/4/news/latest";
 
   RefreshController _refreshController =
   RefreshController(initialRefresh: false);
@@ -115,6 +120,16 @@ class _ArticleMainPageState extends State<ArticleMainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: ()async{
+          http.Response res = await http.get(url);
+          print(jsonDecode(res.body)["stories"]);
+          List l = jsonDecode(res.body)["stories"];
+          l.forEach((e){
+            Firestore.instance.collection('/article').document().setData(e);
+          });
+        },
+      ),
         body: Container(
           width: double.infinity,
           height: double.infinity,

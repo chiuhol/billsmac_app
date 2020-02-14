@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:oktoast/oktoast.dart';
 
 import 'ResetPasswordPage.dart';
+import 'package:apifm/apifm.dart' as Apifm;
 
 ///Author:chiuhol
 ///2020-2-2
@@ -24,7 +25,7 @@ class _LoginPageState extends State<LoginPage>
 
   TextEditingController _phoneController = TextEditingController();
 
-  void login() {
+  void login() async{
     //读取当前的Form状态
     var loginForm = loginKey.currentState;
     //验证Form表单
@@ -68,6 +69,7 @@ class _LoginPageState extends State<LoginPage>
                         style:
                             TextStyle(color: MyColors.white_fe, fontSize: 30.0),
                       )),
+                  SizedBox(height: 12),
                   new Container(
                       padding: const EdgeInsets.all(16.0),
                       margin: EdgeInsets.only(left: 16, right: 16),

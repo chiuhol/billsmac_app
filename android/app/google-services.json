@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "650699363910",
+    "firebase_url": "https://mybillsmac.firebaseio.com",
+    "project_id": "mybillsmac",
+    "storage_bucket": "mybillsmac.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:650699363910:android:9214275260d28f9c981c47",
+        "android_client_info": {
+          "package_name": "billsmacapp.billsmac_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "650699363910-0tif6klnl1832d1i3p3r4483dbde63vg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB817HGMIjFg46dDgbKE-aa0Yt7BoASe2A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "650699363910-0tif6klnl1832d1i3p3r4483dbde63vg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

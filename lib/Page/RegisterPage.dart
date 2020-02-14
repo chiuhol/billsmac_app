@@ -1,5 +1,9 @@
 import 'package:billsmac_app/Common/CommonInsert.dart';
 import 'package:flutter/gestures.dart';
+import 'package:apifm/apifm.dart' as Apifm;
+import 'package:flutter/services.dart';
+
+import 'VerificationCodePage.dart';
 
 ///Author:chiuhol
 ///2020-2-2
@@ -10,30 +14,88 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  GlobalKey<FormState> loginKey = new GlobalKey<FormState>();
-  String userName;
-  String password;
-  bool isShowPassWord = false;
+  TextEditingController _phoneController = TextEditingController();
+  TextEditingController _photoController = TextEditingController();
 
-  void login() {
-    //读取当前的Form状态
-    var loginForm = loginKey.currentState;
-    //验证Form表单
-    if (loginForm.validate()) {
-      loginForm.save();
-      print('userName: ' + userName + ' password: ' + password);
-      if (userName == '18312108986' && password == '123456') {
-        Navigator.pushReplacementNamed(context, '/HomeMain_Page');
-      } else {
-        CommonUtil.showMyToast('账户名或密码错误');
-      }
+  void getCode() async {
+//    var res2 = await Apifm.queryMobileLocation("13537164838");
+//    print(res2);
+    if (!CommonUtil.isPhoneNo(_phoneController.text)) {
+      CommonUtil.showMyToast("请输入正确的手机号码");
+      return;
+    }
+    _photoController.text = '';
+    var res = await Apifm.graphValidateCodeUrl();
+    if (res != null) {
+      _photoCheck(res["key"], res["imageUrl"]);
     }
   }
 
-  void showPassWord() {
-    setState(() {
-      isShowPassWord = !isShowPassWord;
-    });
+  @protected
+  _photoCheck(String key, String url) async {
+    await showDialog(
+        context: context,
+        barrierDismissible: true,
+        child: new SimpleDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            backgroundColor: MyColors.orange_68,
+            title: Container(
+                margin: EdgeInsets.only(left: 80, bottom: 8),
+                child: Text('进行图片验证',
+                    style: TextStyle(
+                        color: MyColors.white_fe, fontSize: MyFonts.f_14))),
+            contentPadding: const EdgeInsets.all(10.0),
+            children: <Widget>[
+              Image.network(url, width: 100, height: 100, fit: BoxFit.fill),
+              Container(
+                  padding: EdgeInsets.only(left: 18, right: 18),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Container(
+                            width: 150,
+                            child: TextField(
+                                maxLines: 1,
+                                controller: _photoController,
+                                cursorColor: MyColors.white_fe,
+                                style: TextStyle(
+                                    color: MyColors.white_fe,
+                                    fontSize: MyFonts.f_18),
+                                decoration: InputDecoration(
+                                    hintText: '请输入图片验证码',
+                                    hintStyle: TextStyle(
+                                      fontSize: MyFonts.f_16,
+                                      color: MyColors.white_fe,
+                                    ),
+                                    border: InputBorder.none))),
+                        GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            onTap: () async {
+                              if (_photoController.text == '') {
+                                CommonUtil.showMyToast("请输入图片验证码");
+                                return;
+                              }
+                              CommonUtil.closePage(context);
+                              Apifm.smsValidateCode(_phoneController.text,key,_photoController.text)
+                                  .then((res) {
+                                if (res["code"] == 0) {
+                                  CommonUtil.openPage(
+                                      context,
+                                      VerificationCodePage(
+                                          _phoneController.text));
+                                } else {
+                                  CommonUtil.showMyToast(res["msg"]);
+                                }
+                              });
+                            },
+                            child: Text("确定",
+                                style: TextStyle(
+                                    color: MyColors.white_fe,
+                                    fontSize: MyFonts.f_16,
+                                    fontWeight: FontWeight.bold)))
+                      ]))
+            ]));
   }
 
   @override
@@ -60,79 +122,74 @@ class _RegisterPageState extends State<RegisterPage> {
                       style:
                           TextStyle(color: MyColors.white_fe, fontSize: 30.0),
                     )),
+                SizedBox(height: 12),
                 new Container(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.only(
+                        top: 16, left: 16, right: 16, bottom: 45),
                     margin: EdgeInsets.only(left: 16, right: 16),
                     decoration: BoxDecoration(
                         color: MyColors.white_fe,
                         borderRadius: BorderRadius.all(Radius.circular(20))),
-                    child: Form(
-                        key: loginKey,
-                        autovalidate: true,
-                        child: new Column(children: <Widget>[
-                          new Container(
-                            decoration: new BoxDecoration(
-                                border: new Border(
-                                    bottom: BorderSide(
-                                        color:
-                                            Color.fromARGB(255, 240, 240, 240),
-                                        width: 1.0))),
-                            child: new TextFormField(
+                    child: Column(children: <Widget>[
+                      new Container(
+                          decoration: new BoxDecoration(
+                              border: new Border(
+                                  bottom: BorderSide(
+                                      color: Color.fromARGB(255, 240, 240, 240),
+                                      width: 1.0))),
+                          child: new TextFormField(
+                              controller: _phoneController,
+                              cursorColor: MyColors.orange_68,
                               decoration: new InputDecoration(
-                                hintText: '请输入手机号',
-                                hintStyle: TextStyle(
-                                    fontSize: 15.0, color: MyColors.grey_cb),
-                                border: InputBorder.none,
-                                suffixIcon: new IconButton(
-                                  icon: new Icon(
-                                    Icons.close,
-                                    color: MyColors.grey_cb,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {});
-                                  },
-                                ),
-                              ),
+                                  hintText: '请输入手机号',
+                                  hintStyle: TextStyle(
+                                      fontSize: 15.0, color: MyColors.grey_cb),
+                                  border: InputBorder.none,
+                                  suffixIcon: new IconButton(
+                                      icon: GestureDetector(
+                                          behavior: HitTestBehavior.translucent,
+                                          onTap: () {
+                                            setState(() {
+                                              _phoneController.text = '';
+                                            });
+                                          },
+                                          child: Icon(
+                                            Icons.close,
+                                            color: MyColors.grey_cb,
+                                          )))),
                               keyboardType: TextInputType.phone,
-                              onSaved: (value) {
-                                userName = value;
-                              },
-                              onFieldSubmitted: (value) {},
-                            ),
-                          ),
-                          new Container(
-                              height: 45.0,
-                              margin: EdgeInsets.only(top: 40.0),
-                              decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(45)),
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      MyColors.orange_b8,
-                                      MyColors.orange_ab
-                                    ],
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                  )),
-                              child: new SizedBox.expand(
-                                  child: new RaisedButton(
-                                onPressed: login,
-                                color: Colors.transparent,
-                                elevation: 0,
-                                // 正常时阴影隐藏
-                                highlightElevation: 0,
-                                child: new Text('获取验证码',
-                                    style: TextStyle(
-                                        fontSize: 14.0,
-                                        color: MyColors.white_fe)),
-                                shape: new RoundedRectangleBorder(
-                                    borderRadius:
-                                        new BorderRadius.circular(45.0)),
-                              )))
-                        ]))),
+                              onFieldSubmitted: (value) {})),
+                      new Container(
+                          height: 45.0,
+                          margin: EdgeInsets.only(top: 40.0),
+                          decoration: BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(45)),
+                              gradient: LinearGradient(
+                                colors: [
+                                  MyColors.orange_b8,
+                                  MyColors.orange_ab
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              )),
+                          child: new SizedBox.expand(
+                              child: new RaisedButton(
+                            onPressed: getCode,
+                            color: Colors.transparent,
+                            elevation: 0,
+                            // 正常时阴影隐藏
+                            highlightElevation: 0,
+                            child: new Text('获取验证码',
+                                style: TextStyle(
+                                    fontSize: 14.0, color: MyColors.white_fe)),
+                            shape: new RoundedRectangleBorder(
+                                borderRadius: new BorderRadius.circular(45.0)),
+                          )))
+                    ])),
                 new Container(
                     alignment: Alignment.center,
-                    padding: EdgeInsets.only(top: 180),
+                    padding: EdgeInsets.only(top: 150),
                     child: Column(children: <Widget>[
                       Row(
                           mainAxisAlignment: MainAxisAlignment.center,
