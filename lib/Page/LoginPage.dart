@@ -1,7 +1,7 @@
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:billsmac_app/Page/RegisterPage.dart';
 import 'package:flutter/gestures.dart';
-import 'package:oktoast/oktoast.dart';
 
 import 'ResetPasswordPage.dart';
 import 'package:apifm/apifm.dart' as Apifm;
@@ -25,17 +25,25 @@ class _LoginPageState extends State<LoginPage>
 
   TextEditingController _phoneController = TextEditingController();
 
-  void login() async{
+  void login() async {
     //读取当前的Form状态
     var loginForm = loginKey.currentState;
     //验证Form表单
     if (loginForm.validate()) {
       loginForm.save();
       print('userName: ' + userName + ' password: ' + password);
-      if (userName == '18312108986' && password == '123456') {
+      String _deviceId = await LocalStorage.get("DeviceId").then((result) {
+        return result;
+      });
+      String _deviceName = await LocalStorage.get("DeviceName").then((result) {
+        return result;
+      });
+      var res =
+          await Apifm.login_mobile(userName, password, _deviceId, _deviceName);
+      if (res["code"] == 0) {
         Navigator.pushReplacementNamed(context, '/HomeMain_Page');
       } else {
-        CommonUtil.showMyToast('账户名或密码错误');
+        CommonUtil.showMyToast(res["msg"]);
       }
     }
   }
@@ -89,6 +97,7 @@ class _LoginPageState extends State<LoginPage>
                                           width: 1.0))),
                               child: new TextFormField(
                                 controller: _phoneController,
+                                cursorColor: MyColors.orange_68,
                                 decoration: new InputDecoration(
                                   hintText: '请输入手机号',
                                   hintStyle: TextStyle(
@@ -130,6 +139,7 @@ class _LoginPageState extends State<LoginPage>
                                                 255, 240, 240, 240),
                                             width: 1.0))),
                                 child: new TextFormField(
+                                    cursorColor: MyColors.orange_68,
                                     decoration: new InputDecoration(
                                         hintText: '请输入密码',
                                         hintStyle: TextStyle(

@@ -6,6 +6,7 @@ import 'package:billsmac_app/Page/SplashPage.dart';
 import 'package:billsmac_app/Page/HomeMainPage.dart';
 import 'package:billsmac_app/Page/mine/MineMainPage.dart';
 import 'package:oktoast/oktoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Common/BaseCommon.dart';
 import 'Common/local/LocalStorage.dart';
@@ -13,6 +14,7 @@ import 'Common/style/colors.dart';
 import 'Common/util/ServiceLocator.dart';
 import 'Page/LoginPage.dart';
 import 'package:apifm/apifm.dart' as Apifm;
+import 'package:device_info/device_info.dart';
 
 ///@Author:chiuhol
 ///2019-12-4
@@ -33,6 +35,8 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _ImageUrl = "";
+
+  @protected
   void loadData_dio_dioOfOptionsSetting(url) async {
     debugPrint(
         ' \n post请求 ======================= 开始请求 =======================\n');
@@ -72,12 +76,35 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  @protected
+  void getDeviceInfo() async{
+    DeviceInfoPlugin deviceInfo = new DeviceInfoPlugin();
+    if(Platform.isIOS){
+      print('IOS设备：');
+      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      print(iosInfo.name);
+      print(iosInfo.identifierForVendor);
+      LocalStorage.save("DeviceType", "ios");
+      LocalStorage.save("DeviceName", iosInfo.name);
+      LocalStorage.save("DeviceId", iosInfo.identifierForVendor);
+    }else if(Platform.isAndroid){
+      print('Android设备');
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      print(androidInfo.id);
+      print(androidInfo.device);
+      LocalStorage.save("DeviceType", "android");
+      LocalStorage.save("DeviceName", androidInfo.device);
+      LocalStorage.save("DeviceId", androidInfo.id);
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
     loadData_dio_dioOfOptionsSetting("https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1");
+    getDeviceInfo();//获取运行设备信息
   }
 
   @override

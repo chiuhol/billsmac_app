@@ -17,8 +17,8 @@ class LocalStorage {
     HttpManager.onLogin(token ?? null);
   }
 
-  static save(String key, value) {
-    SharedPreferences prefs = _preferences;
+  static save(String key, value) async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     if (value is String) {
       prefs.setString(key, value);
     } else if (value is int) {
@@ -30,13 +30,13 @@ class LocalStorage {
     }
   }
 
-  static get(String key) {
-    SharedPreferences prefs = _preferences;
-    return prefs.get(key);
+  static get(String key) async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(key);
   }
 
-  static remove(String key) {
-    SharedPreferences prefs = _preferences;
+  static remove(String key) async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove(key);
   }
 

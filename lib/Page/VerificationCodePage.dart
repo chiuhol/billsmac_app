@@ -149,10 +149,18 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                             onSubmit: (pin) async {
                               var res = await Apifm.smsValidateCodeCheck(
                                   widget.phoneNum, pin);
-                              print(res);
                               if (res["code"] == 0) {
-                                CommonUtil.showMyToast("注册成功");
-                                CommonUtil.openPage(context, HomeMainPage());
+                                var res2 = await Apifm.register_mobile({
+                                  "code": pin,
+                                  'mobile': widget.phoneNum,
+                                  'pwd': '123456'
+                                });
+                                if (res2["code"] == 0) {
+                                  CommonUtil.showMyToast("注册成功");
+                                  CommonUtil.openPage(context, HomeMainPage());
+                                } else {
+                                  CommonUtil.showMyToast(res2["msg"]);
+                                }
                               } else {
                                 CommonUtil.showMyToast(res["msg"]);
                               }
