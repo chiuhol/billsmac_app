@@ -2,7 +2,7 @@ import 'package:billsmac_app/Common/CommonInsert.dart';
 import 'package:pin_input_text_field/pin_input_text_field.dart';
 import 'package:apifm/apifm.dart' as Apifm;
 
-import 'HomeMainPage.dart';
+import 'setPwdPage.dart';
 
 ///Author:chiuhol
 ///2020-2-2
@@ -150,17 +150,10 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                               var res = await Apifm.smsValidateCodeCheck(
                                   widget.phoneNum, pin);
                               if (res["code"] == 0) {
-                                var res2 = await Apifm.register_mobile({
-                                  "code": pin,
-                                  'mobile': widget.phoneNum,
-                                  'pwd': '123456'
-                                });
-                                if (res2["code"] == 0) {
-                                  CommonUtil.showMyToast("注册成功");
-                                  CommonUtil.openPage(context, HomeMainPage());
-                                } else {
-                                  CommonUtil.showMyToast(res2["msg"]);
-                                }
+                                CommonUtil.openPage(
+                                    context,
+                                    setPwdPage(
+                                        phoneNum: widget.phoneNum, code: pin));
                               } else {
                                 CommonUtil.showMyToast(res["msg"]);
                               }

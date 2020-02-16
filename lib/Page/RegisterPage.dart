@@ -18,8 +18,6 @@ class _RegisterPageState extends State<RegisterPage> {
   TextEditingController _photoController = TextEditingController();
 
   void getCode() async {
-//    var res2 = await Apifm.queryMobileLocation("13537164838");
-//    print(res2);
     if (!CommonUtil.isPhoneNo(_phoneController.text)) {
       CommonUtil.showMyToast("请输入正确的手机号码");
       return;
@@ -103,6 +101,8 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
         body: Stack(children: <Widget>[
       new Container(
+          width: double.infinity,
+          height: double.infinity,
           decoration: BoxDecoration(
               gradient: LinearGradient(
             colors: [MyColors.orange_76, MyColors.orange_62],
