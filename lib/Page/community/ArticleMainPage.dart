@@ -120,16 +120,16 @@ class _ArticleMainPageState extends State<ArticleMainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: ()async{
-          http.Response res = await http.get(url);
-          print(jsonDecode(res.body)["stories"]);
-          List l = jsonDecode(res.body)["stories"];
-          l.forEach((e){
-            Firestore.instance.collection('/article').document().setData(e);
-          });
-        },
-      ),
+//      floatingActionButton: FloatingActionButton(
+//        onPressed: ()async{
+//          http.Response res = await http.get(url);
+//          print(jsonDecode(res.body)["stories"]);
+//          List l = jsonDecode(res.body)["stories"];
+//          l.forEach((e){
+//            Firestore.instance.collection('/article').document().setData(e);
+//          });
+//        },
+//      ),
         body: Container(
           width: double.infinity,
           height: double.infinity,

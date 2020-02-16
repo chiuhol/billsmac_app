@@ -41,6 +41,7 @@ class _LoginPageState extends State<LoginPage>
       var res =
           await Apifm.login_mobile(userName, password, _deviceId, _deviceName);
       if (res["code"] == 0) {
+        LocalStorage.save("Token", res["data"]["token"]);
         Navigator.pushReplacementNamed(context, '/HomeMain_Page');
       } else {
         CommonUtil.showMyToast(res["msg"]);

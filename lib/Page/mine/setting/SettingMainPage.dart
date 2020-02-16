@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:billsmac_app/Page/LoginPage.dart';
 import 'package:billsmac_app/Widget/SubprojectWidget.dart';
 import 'package:path_provider/path_provider.dart';
@@ -8,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'AboutUsPage.dart';
 import 'AccountSecurityPage.dart';
 import 'SetGesturePasswordPage.dart';
+import 'package:apifm/apifm.dart' as Apifm;
 
 ///Author:chiuhol
 ///2020-2-7
@@ -113,16 +115,22 @@ class _SettingMainPageState extends State<SettingMainPage> {
                 child: Column(children: <Widget>[
                   SizedBox(height: 2),
                   SubprojectWidget(
-                      title: '账号与绑定设置',
-                      icon: 0xe62a,
-                      iconColor: MyColors.grey_e4,rout: AccountSecurityPage(),),
+                    title: '账号与绑定设置',
+                    icon: 0xe62a,
+                    iconColor: MyColors.grey_e4,
+                    rout: AccountSecurityPage(),
+                  ),
                   SeparatorWidget(),
                   SubprojectWidget(
-                      title: '密码锁', icon: 0xe612, iconColor: MyColors.grey_e4, rout: SetGesturePasswordPage(),),
+                    title: '密码锁',
+                    icon: 0xe612,
+                    iconColor: MyColors.grey_e4,
+                    rout: SetGesturePasswordPage(),
+                  ),
                   SizedBox(height: 8),
                   GestureDetector(
                       behavior: HitTestBehavior.translucent,
-                      onTap: (){
+                      onTap: () {
                         _clearCache();
                       },
                       child: Container(
@@ -164,30 +172,36 @@ class _SettingMainPageState extends State<SettingMainPage> {
                       iconColor: MyColors.grey_e4),
                   SeparatorWidget(),
                   SubprojectWidget(
-                      title: '关于我们', icon: 0xe61f, iconColor: MyColors.grey_e4, rout: AboutUsPage(),),
+                    title: '关于我们',
+                    icon: 0xe61f,
+                    iconColor: MyColors.grey_e4,
+                    rout: AboutUsPage(),
+                  ),
                   SeparatorWidget(),
                   SubprojectWidget(
-                      title: '联系我们', icon: 0xe607, iconColor: MyColors.grey_e4, subTitle: _contactUs,),
+                    title: '联系我们',
+                    icon: 0xe607,
+                    iconColor: MyColors.grey_e4,
+                    subTitle: _contactUs,
+                  ),
                   SizedBox(height: 24),
                   GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onTap: (){
-                      CommonUtil.openPage(context, LoginPage());
-                    },
-                    child: Container(
-                        color: MyColors.white_fe,
-                        padding: EdgeInsets.only(top: 18, bottom: 18),
-                        child: Center(
-                            child: Text(
-                                "退出登录",
-                                style: TextStyle(
-                                    color: MyColors.red_34,
-                                    fontSize: MyFonts.f_15
-                                )
-                            )
-                        )
-                    )
-                  )
+                      behavior: HitTestBehavior.translucent,
+                      onTap: () async{
+                        String _token = await LocalStorage.get("Token").then((value){
+                          return value;
+                        });
+                        Apifm.loginout(_token);
+                        CommonUtil.openPage(context, LoginPage());
+                      },
+                      child: Container(
+                          color: MyColors.white_fe,
+                          padding: EdgeInsets.only(top: 18, bottom: 18),
+                          child: Center(
+                              child: Text("退出登录",
+                                  style: TextStyle(
+                                      color: MyColors.red_34,
+                                      fontSize: MyFonts.f_15)))))
                 ]))));
   }
 }

@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:billsmac_app/Widget/NumKeyBoard.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:apifm/apifm.dart' as Apifm;
 
 import 'SearchPage.dart';
 import 'calendar/CalendarMainPage.dart';
@@ -73,11 +75,25 @@ class _TallyMainPageState extends State<TallyMainPage>
     _chatLst.add({"id":6,"time":"2020-01-31 18:10:10","myCType":"晚餐","amount":28.00,"replyContent":"记得按时吃饭哦"});
   }
 
+  @protected
+  _checkToken()async{
+    String _token = await LocalStorage.get("Token").then((value){
+      return value;
+    });
+    var res = await Apifm.checkToken(_token);
+    if(res["code"] == 0){
+      return;
+    }else{
+      CommonUtil.showMyToast("请重新登录");
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
+    _checkToken();
     _getData();
 
     _tabController = TabController(
