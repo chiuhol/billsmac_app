@@ -9,6 +9,7 @@ import 'package:apifm/apifm.dart' as Apifm;
 
 import 'SearchPage.dart';
 import 'calendar/CalendarMainPage.dart';
+import 'chatroom/ObjectDetailPage.dart';
 import 'more/MoreMainPage.dart';
 import 'statistics/StatisticsMainPage.dart';
 
@@ -282,12 +283,18 @@ class _TallyMainPageState extends State<TallyMainPage>
         padding: EdgeInsets.only(left: 18, top: 18),
         child:
             Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
-          ClipOval(
-              child: Image.network(
-                  'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=1908196590,4061628990&fm=11&gp=0.jpg',
-                  width: 45,
-                  height: 45,
-                  fit: BoxFit.cover)),
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: (){
+              CommonUtil.openPage(context, ObjectDetailPage());
+            },
+            child: ClipOval(
+                child: Image.network(
+                    'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=1908196590,4061628990&fm=11&gp=0.jpg',
+                    width: 45,
+                    height: 45,
+                    fit: BoxFit.cover))
+          ),
           SizedBox(width: 18),
           Container(
               decoration: BoxDecoration(
