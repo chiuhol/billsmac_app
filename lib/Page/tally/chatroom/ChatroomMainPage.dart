@@ -40,17 +40,18 @@ class _ChatroomMainPageState extends State<ChatroomMainPage> {
       CommonUtil.showMyToast('消息内容不能为空');
       return;
     }
+    String _content = _contentController.text;
     setState(() {
-      _contentLst
-          .add({"content": _contentController.text, "isMyContent": true});
+      _contentController.text = '';
+      _contentLst.add({"content": _content, "isMyContent": true});
     });
-    http.Response res = await http.get(url+_contentController.text);
-    if(jsonDecode(res.body)["result"] == 0){
+    http.Response res = await http.get(url + _content);
+    if (jsonDecode(res.body)["result"] == 0) {
       setState(() {
-        _contentLst
-            .add({"content": jsonDecode(res.body)["content"], "isMyContent": false});
+        _contentLst.add(
+            {"content": jsonDecode(res.body)["content"], "isMyContent": false});
       });
-    }else{
+    } else {
       CommonUtil.showMyToast("连接服务器错误");
     }
   }
@@ -58,76 +59,76 @@ class _ChatroomMainPageState extends State<ChatroomMainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: MyAppBar(
-          title: _nikeName,
-          isBack: true,
-          backIcon: Icon(Icons.keyboard_arrow_left,
-              color: MyColors.black_32, size: 28),
-          color: MyColors.white_fe,
-        ),
-        body: Container(
-            width: double.infinity,
-            height: double.infinity,
-            color: MyColors.grey_e2,
-            child: SingleChildScrollView(
-                physics: BouncingScrollPhysics(
-                    parent: AlwaysScrollableScrollPhysics()),
-                child: Column(children: <Widget>[
-                  ListView.builder(
-                      itemBuilder: itemBuilder,
-                      itemCount: _contentLst.length,
-                      shrinkWrap: true)
-                ]))),
-        bottomSheet: Container(
-            width: double.infinity,
-            height: 45,
-            color: MyColors.grey_e4,
-            child: Padding(
-                padding:
-                    EdgeInsets.only(left: 18, right: 18, top: 5, bottom: 5),
-                child: Row(children: <Widget>[
-                  GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      onTap: () {},
-                      child: Container(
-                          padding: EdgeInsets.only(left: 18, top: 16),
-                          decoration: BoxDecoration(
-                              color: MyColors.white_f6,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(20))),
+      appBar: MyAppBar(
+        title: _nikeName,
+        isBack: true,
+        backIcon:
+            Icon(Icons.keyboard_arrow_left, color: MyColors.black_32, size: 28),
+        color: MyColors.white_fe,
+      ),
+      body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          color: MyColors.grey_e2,
+          child: Column(children: <Widget>[
+            Expanded(
+                child: ListView.builder(
+                    physics: BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics()),
+                    itemBuilder: itemBuilder,
+                    itemCount: _contentLst.length,
+                    shrinkWrap: true)),
+            Container(
+                width: double.infinity,
+                height: 55,
+                color: MyColors.grey_e4,
+                child: Padding(
+                    padding:
+                        EdgeInsets.only(left: 12, right: 12, top: 8, bottom: 8),
+                    child: Row(children: <Widget>[
+                      Expanded(
                           child: Container(
-                              width: 300,
+                              padding: EdgeInsets.only(left: 18, top: 16),
+                              decoration: BoxDecoration(
+                                  color: MyColors.white_f6,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(20))),
                               child: TextField(
                                   controller: _contentController,
-                                  inputFormatters: [
-                                    LengthLimitingTextInputFormatter(7)
-                                  ],
+                                  keyboardType: TextInputType.text,
+                                  onSubmitted: (value) {
+                                    if (value != '') {
+                                      _send();
+                                    }
+                                  },
                                   autofocus: false,
                                   cursorColor: MyColors.orange_68,
                                   decoration: InputDecoration(
                                     hintText: "请输入消息",
                                     hintStyle: TextStyle(
-                                      fontSize: MyFonts.f_15,
+                                      fontSize: MyFonts.f_18,
                                       color: MyColors.grey_cb,
                                     ),
                                     border: InputBorder.none,
-                                  ))))),
-                  SizedBox(width: 18),
-                  GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      onTap: _send,
-                      child: Text('发送',
-                          style: TextStyle(
-                              color: MyColors.black_32,
-                              fontSize: MyFonts.f_16,
-                              fontWeight: FontWeight.bold)))
-                ]))));
+                                  )))),
+                      SizedBox(width: 18),
+                      GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: _send,
+                          child: Icon(Icons.send,
+                              size: 26, color: MyColors.blue_e9))
+                    ])))
+          ])),
+    );
   }
 
   Widget itemBuilder(BuildContext context, int index) {
     Map _content = _contentLst[index];
     if (_content["isMyContent"]) {
-      return rightObject(_content["content"]);
+      return Column(children: <Widget>[
+        index == 0 ? SizedBox(height: 18) : SizedBox(),
+        rightObject(_content["content"])
+      ]);
     } else if (!_content["isMyContent"]) {
       return leftObject(_content["content"]);
     } else {
@@ -137,45 +138,49 @@ class _ChatroomMainPageState extends State<ChatroomMainPage> {
 
   Widget leftObject(String title) {
     return Container(
-        padding: EdgeInsets.only(left: 18, top: 18),
+        padding: EdgeInsets.only(left: 12, bottom: 12,right: 12),
         child:
             Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
           ClipOval(
               child: Image.network(_objectAvatar,
                   width: 45, height: 45, fit: BoxFit.cover)),
-          SizedBox(width: 18),
-          Container(
-              decoration: BoxDecoration(
-                  color: MyColors.grey_f9,
-                  borderRadius: BorderRadius.all(Radius.circular(20))),
-              child: Padding(
-                  padding:
-                      EdgeInsets.only(left: 18, right: 18, top: 12, bottom: 12),
-                  child: Text(title,
-                      style: TextStyle(
-                          color: MyColors.black_62, fontSize: MyFonts.f_14))))
+          SizedBox(width: 12),
+          Flexible(
+              child: Container(
+                  decoration: BoxDecoration(
+                      color: MyColors.grey_f9,
+                      borderRadius: BorderRadius.all(Radius.circular(20))),
+                  child: Padding(
+                      padding: EdgeInsets.only(
+                          left: 18, right: 18, top: 12, bottom: 12),
+                      child: Text(title,
+                          style: TextStyle(
+                              color: MyColors.black_62,
+                              fontSize: MyFonts.f_14)))))
         ]));
   }
 
   Widget rightObject(String content) {
     return Container(
-        padding: EdgeInsets.only(right: 18, top: 18),
+        padding: EdgeInsets.only(right: 12, bottom: 12,left: 12),
         child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
-          Container(
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [MyColors.orange_b8, MyColors.orange_ab],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                  borderRadius: BorderRadius.all(Radius.circular(20))),
-              child: Padding(
-                  padding:
-                      EdgeInsets.only(left: 18, right: 18, top: 12, bottom: 12),
-                  child: Text(content,
-                      style: TextStyle(
-                          color: MyColors.white_fe, fontSize: MyFonts.f_14)))),
-          SizedBox(width: 18),
+          Flexible(
+              child: Container(
+                  decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [MyColors.orange_b8, MyColors.orange_ab],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(20))),
+                  child: Padding(
+                      padding: EdgeInsets.only(
+                          left: 18, right: 18, top: 12, bottom: 12),
+                      child: Text(content,
+                          style: TextStyle(
+                              color: MyColors.white_fe,
+                              fontSize: MyFonts.f_14))))),
+          SizedBox(width: 12),
           ClipOval(
               child: Image.network(_myAvatar,
                   width: 45, height: 45, fit: BoxFit.cover))

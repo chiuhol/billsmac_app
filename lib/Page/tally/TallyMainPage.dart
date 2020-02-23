@@ -280,7 +280,7 @@ class _TallyMainPageState extends State<TallyMainPage>
 
   Widget leftObject(String title) {
     return Container(
-        padding: EdgeInsets.only(left: 18, top: 18),
+        padding: EdgeInsets.only(left: 12, top: 12),
         child:
             Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
           GestureDetector(
@@ -295,39 +295,41 @@ class _TallyMainPageState extends State<TallyMainPage>
                     height: 45,
                     fit: BoxFit.cover))
           ),
-          SizedBox(width: 18),
-          Container(
+          SizedBox(width: 12),
+          Flexible(child: Container(
               decoration: BoxDecoration(
                   color: MyColors.grey_f9,
                   borderRadius: BorderRadius.all(Radius.circular(20))),
               child: Padding(
                   padding:
-                      EdgeInsets.only(left: 18, right: 18, top: 12, bottom: 12),
+                  EdgeInsets.only(left: 18, right: 18, top: 12, bottom: 12),
                   child: Text(title,
                       style: TextStyle(
-                          color: MyColors.black_62, fontSize: MyFonts.f_14))))
+                          color: MyColors.black_62, fontSize: MyFonts.f_14)))))
         ]));
   }
 
   Widget rightObject(String content,double amount) {
     return Container(
-        padding: EdgeInsets.only(right: 18, top: 18),
+        padding: EdgeInsets.only(right: 12, top: 12),
         child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
-          Container(
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [MyColors.orange_b8, MyColors.orange_ab],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                  borderRadius: BorderRadius.all(Radius.circular(20))),
-              child: Padding(
-                  padding:
-                      EdgeInsets.only(left: 18, right: 18, top: 12, bottom: 12),
-                  child: Text(content + "：" + amount.toString(),
-                      style: TextStyle(
-                          color: MyColors.white_fe, fontSize: MyFonts.f_14)))),
-          SizedBox(width: 18),
+          Flexible(
+            child: Container(
+                decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [MyColors.orange_b8, MyColors.orange_ab],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: BorderRadius.all(Radius.circular(20))),
+                child: Padding(
+                    padding:
+                    EdgeInsets.only(left: 18, right: 18, top: 12, bottom: 12),
+                    child: Text(content + "：" + amount.toString(),
+                        style: TextStyle(
+                            color: MyColors.white_fe, fontSize: MyFonts.f_14))))
+          ),
+          SizedBox(width: 12),
           ClipOval(
               child: Image.network(
                   'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=1379686624,47059782&fm=26&gp=0.jpg',
