@@ -20,24 +20,24 @@ class _HomeMainPageState extends State<HomeMainPage>
   bool get wantKeepAlive => true;
 
   //定义默认状态和点击状态的颜色
-  Color _defaultColor = MyColors.grey_e4;
-  Color _activeColor = MyColors.orange_67;
-  int _currentIndex = 1;
+  static Color _defaultColor = MyColors.grey_e4;
+  static Color _activeColor = MyColors.orange_67;
+  static int _currentIndex = 1;
+
+  List<Widget> _children;
+  List<BottomNavigationBarItem> _list = <BottomNavigationBarItem>[];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    final List<Widget> _children = [
+    _children = [
       CommunityMainPage(),
       TallyMainPage(),
       MineMainPage(),
     ];
-    final List<BottomNavigationBarItem> _list = <BottomNavigationBarItem>[
+    _list = <BottomNavigationBarItem>[
       BottomNavigationBarItem(
           icon: Icon(IconData(0xe61c, fontFamily: 'MyIcons'),
               size: 24, color: _defaultColor),
@@ -63,6 +63,10 @@ class _HomeMainPageState extends State<HomeMainPage>
               style: TextStyle(
                   color: _currentIndex != 2 ? _defaultColor : _activeColor)))
     ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
         body: IndexedStack(
           index: _currentIndex,

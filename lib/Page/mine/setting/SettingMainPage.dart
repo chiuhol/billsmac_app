@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'AboutUsPage.dart';
 import 'AccountSecurityPage.dart';
+import 'HelpAndFeedback/HelpAndFeedbackMainPage.dart';
 import 'SetGesturePasswordPage.dart';
 import 'package:apifm/apifm.dart' as Apifm;
 
@@ -169,7 +170,9 @@ class _SettingMainPageState extends State<SettingMainPage> {
                   SubprojectWidget(
                       title: '帮助与反馈',
                       icon: 0xe614,
-                      iconColor: MyColors.grey_e4),
+                      iconColor: MyColors.grey_e4,
+                  rout: HelpAndFeedbackMainPage()
+                  ),
                   SeparatorWidget(),
                   SubprojectWidget(
                     title: '关于我们',

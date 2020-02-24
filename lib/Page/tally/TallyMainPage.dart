@@ -134,6 +134,7 @@ class _TallyMainPageState extends State<TallyMainPage>
     return Scaffold(
         appBar: PreferredSize(
             child: AppBar(
+                elevation: 0,
                 title: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[

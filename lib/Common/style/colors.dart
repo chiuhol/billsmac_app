@@ -61,6 +61,7 @@ class MyColors {
   static const Color grey_cb = Color(0xFFBDC0CB);
   static const Color grey_e4 = Color(0xFFD4D8E4);
   static const Color grey_a0 = Color(0xFF9195a0);
+  static const Color grey_fe = Color(0xFFEDF5FE);
 
 //  static const Color grey_99=Color(0xFF909399);
 
@@ -105,6 +106,7 @@ class MyColors {
   static const Color blue_e9 = Color(0xFF00A0E9);
   static const Color blue_ff = Color(0xFF00C5FF);
   static const Color blue_f5 = Color(0xFF1B81F5);
+  static const Color blue_f6 = Color(0xFF3982F6);
 
   static const Color green_8d = Color(0xFF05B58D);
   static const Color green_e9 = Color(0xFFC6F3E9);

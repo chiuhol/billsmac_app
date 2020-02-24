@@ -1,9 +1,8 @@
-import 'dart:async';
-
 import 'package:billsmac_app/Common/CommonInsert.dart';
 
 import 'ArticleMainPage.dart';
 import 'DiscussMainPage.dart';
+import 'SearchMainPage.dart';
 
 ///Author:chiuhol
 ///2020-2-2
@@ -14,13 +13,16 @@ class CommunityMainPage extends StatefulWidget {
 }
 
 class _CommunityMainPageState extends State<CommunityMainPage> {
-  final List<Tab> tabs = <Tab>[
-    new Tab(
-      text: '文章',
-    ),
-    new Tab(
-      text: '讨论',
-    ),
+  final List<Tab> tabs = <Tab>[new Tab(text: '推荐'), new Tab(text: '热搜')];
+  String _hotSearch = '开窗通风会传播病毒吗';
+
+  List _topicLst = [
+    {"type": "全站", "isSelected": false},
+    {"type": "科学", "isSelected": false},
+    {"type": "数码", "isSelected": false},
+    {"type": "理财", "isSelected": false},
+    {"type": "体育", "isSelected": false},
+    {"type": "时尚", "isSelected": false}
   ];
 
   @override
@@ -30,34 +32,107 @@ class _CommunityMainPageState extends State<CommunityMainPage> {
   }
 
   Widget build(BuildContext context) {
-    return new DefaultTabController(
-        //length表示一个有几个标签栏
+    return DefaultTabController(
         length: tabs.length,
-        //返回一个包含了appBar和body内容区域的脚手架
-        child: new Scaffold(
-            appBar: new PreferredSize(
+        child: Scaffold(
+            appBar: PreferredSize(
                 child: AppBar(
-                  backgroundColor: Colors.white,
-                  //标签栏位置存于appBar的底部，tabs是一个widget数组，就是每个标签栏的内容
-                  bottom: new TabBar(
-                    tabs: tabs,
-                    //这表示当标签栏内容超过屏幕宽度时是否滚动，因为我们有8个标签栏所以这里设置是
-                    isScrollable: true,
-                    indicatorColor: MyColors.orange_68,
-                    indicatorSize: TabBarIndicatorSize.label,
-                    //标签颜色
-                    labelColor: MyColors.orange_68,
-                    //未被选中的标签的颜色
-                    unselectedLabelColor: Colors.grey,
-                    unselectedLabelStyle: TextStyle(fontSize: 16),
-                    labelStyle: new TextStyle(fontSize: 18.0),
-                  ),
-                ),
-                preferredSize: Size.fromHeight(50)),
-            //根据tab内容，我在每个标签对应的视图里放了一个简单的文本，内容就是对应的标签名称。
-            body: new TabBarView(children: <Widget>[
-              ArticleMainPage(),
-              DiscussMainPage(),
-            ])));
+                    elevation: 0,
+                    title: Padding(
+                        padding: EdgeInsets.only(left: 50, right: 50),
+                        child: GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            onTap: () {CommonUtil.openPage(context, SearchMainPage());},
+                            child: Container(
+                                padding: EdgeInsets.only(top: 8, bottom: 8),
+                                decoration: BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(10.0)),
+                                    color: MyColors.grey_f0),
+                                child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Icon(
+                                          IconData(0xe63a,
+                                              fontFamily: 'MyIcons'),
+                                          size: 26,
+                                          color: MyColors.grey_cb),
+                                      SizedBox(width: 12),
+                                      Text(_hotSearch,
+                                          style: TextStyle(
+                                              color: MyColors.grey_cb,
+                                              fontSize: MyFonts.f_16))
+                                    ])))),
+                    backgroundColor: MyColors.white_fe,
+                    centerTitle: true,
+                    flexibleSpace: Container(
+                        padding: EdgeInsets.only(top: 75, left: 18, right: 18),
+                        child: Column(children: <Widget>[
+                          tabBar(),
+                          SeparatorWidget(),
+                          Container(
+                              width: double.infinity,
+                              height: 45,
+                              padding: EdgeInsets.only(top: 18),
+                              child: topicListView())
+                        ]))),
+                preferredSize: Size.fromHeight(158)),
+            body: TabBarView(
+                children: <Widget>[ArticleMainPage(), DiscussMainPage()])));
+  }
+
+  Widget tabBar() {
+    return TabBar(
+        tabs: tabs,
+        isScrollable: true,
+        indicatorColor: MyColors.black_32,
+        indicatorWeight: 3.0,
+        indicatorSize: TabBarIndicatorSize.label,
+        labelColor: MyColors.black_32,
+        unselectedLabelColor: MyColors.black_32,
+        unselectedLabelStyle: TextStyle(fontSize: 14),
+        labelStyle: new TextStyle(fontSize: 16, fontWeight: FontWeight.bold));
+  }
+
+  Widget topicListView() {
+    return ListView.builder(
+        itemBuilder: itemBuilder,
+        itemCount: _topicLst.length,
+        shrinkWrap: true,
+        scrollDirection: Axis.horizontal);
+  }
+
+  Widget itemBuilder(BuildContext context, int index) {
+    Map _topic = _topicLst[index];
+    return Padding(
+        padding: EdgeInsets.only(left: 12),
+        child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              if (!_topic["isSelected"]) {
+                setState(() {
+                  _topicLst.forEach((item) {
+                    item["isSelected"] = false;
+                  });
+                  _topic["isSelected"] = true;
+                });
+              }
+            },
+            child: Container(
+                padding: EdgeInsets.only(left: 12, right: 12),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                    border: Border.all(
+                        color: _topic["isSelected"] == true
+                            ? MyColors.blue_f6
+                            : MyColors.grey_99),
+                    color: MyColors.grey_fe),
+                child: Center(
+                    child: Text(_topic["type"],
+                        style: TextStyle(
+                            color: _topic["isSelected"] == true
+                                ? MyColors.blue_f6
+                                : MyColors.grey_99,
+                            fontSize: MyFonts.f_14))))));
   }
 }
