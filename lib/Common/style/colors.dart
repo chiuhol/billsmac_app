@@ -31,6 +31,7 @@ class MyColors {
   static const Color black_62 = Color(0xFF525762);
   static const Color black_45 = Color(0xFF333645);
   static const Color black_5f = Color(0xFF3d435f);
+  static const Color black_1a = Color(0xFF1A1A1A);
 
   static const Color grey_f5 = Color(0xFFF5F5F5);
   static const Color grey_f6 = Color(0xFFF2F3F6);

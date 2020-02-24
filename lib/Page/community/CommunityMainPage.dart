@@ -85,11 +85,11 @@ class _CommunityMainPageState extends State<CommunityMainPage> {
     return TabBar(
         tabs: tabs,
         isScrollable: true,
-        indicatorColor: MyColors.black_32,
+        indicatorColor: MyColors.black_1a,
         indicatorWeight: 3.0,
         indicatorSize: TabBarIndicatorSize.label,
-        labelColor: MyColors.black_32,
-        unselectedLabelColor: MyColors.black_32,
+        labelColor: MyColors.black_1a,
+        unselectedLabelColor: MyColors.black_1a,
         unselectedLabelStyle: TextStyle(fontSize: 14),
         labelStyle: new TextStyle(fontSize: 16, fontWeight: FontWeight.bold));
   }
