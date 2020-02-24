@@ -13,6 +13,7 @@ class _SearchMainPageState extends State<SearchMainPage> {
   TextEditingController _searchController = TextEditingController();
 
   List _historyLst = [];
+  bool _isSearch = false;
 
   @protected
   _getData() {
@@ -34,6 +35,9 @@ class _SearchMainPageState extends State<SearchMainPage> {
   @protected
   _search(String content) {
     print("搜索" + content);
+    setState(() {
+      _isSearch = true;
+    });
   }
 
   @override
@@ -51,44 +55,7 @@ class _SearchMainPageState extends State<SearchMainPage> {
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
-                          Expanded(
-                              child: Container(
-                                  padding: EdgeInsets.only(left: 8),
-                                  decoration: BoxDecoration(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(5)),
-                                      color: MyColors.grey_f0),
-                                  child: Row(children: <Widget>[
-                                    Icon(
-                                        IconData(0xe63a, fontFamily: 'MyIcons'),
-                                        size: 24,
-                                        color: MyColors.grey_99),
-                                    SizedBox(width: 8),
-                                    Container(
-                                        width: 200,
-                                        child: TextField(
-                                            controller: _searchController,
-                                            inputFormatters: [
-                                              LengthLimitingTextInputFormatter(
-                                                  20)
-                                              //限制长度
-                                            ],
-                                            onSubmitted: (value) {
-                                              if (value != '') {
-                                                _search(value);
-                                              }
-                                            },
-                                            autofocus: true,
-                                            cursorColor: MyColors.orange_68,
-                                            decoration: InputDecoration(
-                                              hintText: "搜索全站内容",
-                                              hintStyle: TextStyle(
-                                                fontSize: MyFonts.f_15,
-                                                color: MyColors.grey_99,
-                                              ),
-                                              border: InputBorder.none,
-                                            )))
-                                  ]))),
+                          Expanded(child: searchWidget()),
                           SizedBox(width: 12),
                           GestureDetector(
                               behavior: HitTestBehavior.translucent,
@@ -105,10 +72,48 @@ class _SearchMainPageState extends State<SearchMainPage> {
             width: double.infinity,
             height: double.infinity,
             color: MyColors.white_fe,
-            child: Column(children: <Widget>[
-              _historyLst.length == 0 ? Container() : searchHistory(),
-              historyWidget()
-            ])));
+            child: _isSearch == false
+                ? Column(children: <Widget>[
+                    _historyLst.length == 0 ? Container() : searchHistory(),
+                    historyWidget()
+                  ])
+                : Container()));
+  }
+
+  Widget searchWidget() {
+    return Container(
+        padding: EdgeInsets.only(left: 8),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(5)),
+            color: MyColors.grey_f0),
+        child: Row(children: <Widget>[
+          Icon(IconData(0xe63a, fontFamily: 'MyIcons'),
+              size: 24, color: MyColors.grey_99),
+          SizedBox(width: 8),
+          Container(
+              width: 200,
+              child: TextField(
+                  controller: _searchController,
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(20)
+                    //限制长度
+                  ],
+                  onSubmitted: (value) {
+                    if (value != '') {
+                      _search(value);
+                    }
+                  },
+                  autofocus: true,
+                  cursorColor: MyColors.orange_68,
+                  decoration: InputDecoration(
+                    hintText: "搜索全站内容",
+                    hintStyle: TextStyle(
+                      fontSize: MyFonts.f_15,
+                      color: MyColors.grey_99,
+                    ),
+                    border: InputBorder.none,
+                  )))
+        ]));
   }
 
   Widget searchHistory() {
@@ -147,6 +152,9 @@ class _SearchMainPageState extends State<SearchMainPage> {
       GestureDetector(
           behavior: HitTestBehavior.translucent,
           onTap: () {
+            setState(() {
+              _searchController.text = _history["content"];
+            });
             _search(_history["content"]);
           },
           child: Padding(

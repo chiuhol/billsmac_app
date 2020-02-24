@@ -1,7 +1,9 @@
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Widget/community/FocusWidget.dart';
+import 'package:billsmac_app/Widget/community/RecommendWidget.dart';
+import 'package:billsmac_app/Widget/community/TopSearchWidget.dart';
 
 import 'ArticleMainPage.dart';
-import 'DiscussMainPage.dart';
 import 'SearchMainPage.dart';
 
 ///Author:chiuhol
@@ -13,7 +15,11 @@ class CommunityMainPage extends StatefulWidget {
 }
 
 class _CommunityMainPageState extends State<CommunityMainPage> {
-  final List<Tab> tabs = <Tab>[new Tab(text: '推荐'), new Tab(text: '热搜')];
+  final List<Tab> tabs = <Tab>[
+    new Tab(text: '关注'),
+    new Tab(text: '推荐'),
+    new Tab(text: '热搜')
+  ];
   String _hotSearch = '开窗通风会传播病毒吗';
 
   List _topicLst = [
@@ -24,6 +30,10 @@ class _CommunityMainPageState extends State<CommunityMainPage> {
     {"type": "体育", "isSelected": false},
     {"type": "时尚", "isSelected": false}
   ];
+
+  List _focusLst = [];
+  List _recommendLst = [];
+  List _topSearchLst = [];
 
   @override
   void initState() {
@@ -42,7 +52,9 @@ class _CommunityMainPageState extends State<CommunityMainPage> {
                         padding: EdgeInsets.only(left: 50, right: 50),
                         child: GestureDetector(
                             behavior: HitTestBehavior.translucent,
-                            onTap: () {CommonUtil.openPage(context, SearchMainPage());},
+                            onTap: () {
+                              CommonUtil.openPage(context, SearchMainPage());
+                            },
                             child: Container(
                                 padding: EdgeInsets.only(top: 8, bottom: 8),
                                 decoration: BoxDecoration(
@@ -77,8 +89,11 @@ class _CommunityMainPageState extends State<CommunityMainPage> {
                               child: topicListView())
                         ]))),
                 preferredSize: Size.fromHeight(158)),
-            body: TabBarView(
-                children: <Widget>[ArticleMainPage(), DiscussMainPage()])));
+            body: TabBarView(children: <Widget>[
+              FocusWidget(focusLst: _focusLst),
+              RecommendWidget(recommendLst: _recommendLst),
+              TopSearchWidget(topSearchLst: _topSearchLst)
+            ])));
   }
 
   Widget tabBar() {
