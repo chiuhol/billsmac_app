@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:billsmac_app/Page/mine/RemindPage.dart';
 import 'package:billsmac_app/Page/mine/setting/SettingMainPage.dart';
 import 'package:billsmac_app/Widget/SubprojectWidget.dart';
+import 'package:http/http.dart' as http;
 
 import 'PersonalInfoPage.dart';
 import 'messageCenter/messageCenterMainPage.dart';
@@ -21,6 +25,13 @@ class _MineMainPageState extends State<MineMainPage> {
   int _day = 7;
   String _assistantName = '梁佩诗';
 
+  @protected
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:billsmac_app/Common/CommonInsert.dart';
 import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:billsmac_app/Page/RegisterPage.dart';
 import 'package:flutter/gestures.dart';
+import 'package:http/http.dart' as http;
 
 import 'ResetPasswordPage.dart';
 import 'package:apifm/apifm.dart' as Apifm;
@@ -38,13 +41,16 @@ class _LoginPageState extends State<LoginPage>
       String _deviceName = await LocalStorage.get("DeviceName").then((result) {
         return result;
       });
-      var res =
-          await Apifm.login_mobile(userName, password, _deviceId, _deviceName);
-      if (res["code"] == 0) {
-        LocalStorage.save("Token", res["data"]["token"]);
+      try {
+        http.Response res = await http.post(Address.login(),
+            body: {"phone": userName, "password": password});
+        LocalStorage.save("Token", jsonDecode(res.body)["token"]);
+        print(jsonDecode(res.body)["stack"]);
+        print(jsonDecode(res.body)["user"]);
         Navigator.pushReplacementNamed(context, '/HomeMain_Page');
-      } else {
-        CommonUtil.showMyToast(res["msg"]);
+      } catch (err) {
+        print(err);
+        CommonUtil.showMyToast(err);
       }
     }
   }

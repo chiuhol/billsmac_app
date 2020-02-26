@@ -88,7 +88,7 @@ class _SearchMainPageState extends State<SearchMainPage> {
             color: MyColors.grey_f0),
         child: Row(children: <Widget>[
           Icon(IconData(0xe63a, fontFamily: 'MyIcons'),
-              size: 24, color: MyColors.grey_99),
+              size: 18, color: MyColors.grey_99),
           SizedBox(width: 8),
           Container(
               width: 200,
@@ -128,9 +128,11 @@ class _SearchMainPageState extends State<SearchMainPage> {
               GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onTap: () {
-                    setState(() {
-                      _historyLst.removeRange(0, _historyLst.length);
-                    });
+                    if(mounted){
+                      setState(() {
+                        _historyLst.removeRange(0, _historyLst.length);
+                      });
+                    }
                   },
                   child: Text('清空',
                       style: TextStyle(
@@ -152,9 +154,11 @@ class _SearchMainPageState extends State<SearchMainPage> {
       GestureDetector(
           behavior: HitTestBehavior.translucent,
           onTap: () {
+            if(mounted){
             setState(() {
-              _searchController.text = _history["content"];
+            _searchController.text = _history["content"];
             });
+            }
             _search(_history["content"]);
           },
           child: Padding(
@@ -174,9 +178,11 @@ class _SearchMainPageState extends State<SearchMainPage> {
                     GestureDetector(
                         behavior: HitTestBehavior.translucent,
                         onTap: () {
-                          setState(() {
-                            _historyLst.removeAt(index);
-                          });
+                          if(mounted){
+                            setState(() {
+                              _historyLst.removeAt(index);
+                            });
+                          }
                         },
                         child: Icon(Icons.clear,
                             color: MyColors.grey_cb, size: 18))

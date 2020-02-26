@@ -40,6 +40,12 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
 
   final sqlHelp = SqliteHelper();
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
   @protected
   _updateBirthDay() async {
     DatePicker.showDatePicker(context,

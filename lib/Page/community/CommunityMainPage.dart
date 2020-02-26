@@ -28,7 +28,8 @@ class _CommunityMainPageState extends State<CommunityMainPage> {
     {"type": "数码", "isSelected": false},
     {"type": "理财", "isSelected": false},
     {"type": "体育", "isSelected": false},
-    {"type": "时尚", "isSelected": false}
+    {"type": "时尚", "isSelected": false},
+    {"type": "美食", "isSelected": false}
   ];
 
   List _focusLst = [];
@@ -39,17 +40,19 @@ class _CommunityMainPageState extends State<CommunityMainPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+
   }
 
   Widget build(BuildContext context) {
     return DefaultTabController(
+      initialIndex: 2,
         length: tabs.length,
         child: Scaffold(
             appBar: PreferredSize(
                 child: AppBar(
                     elevation: 0,
                     title: Padding(
-                        padding: EdgeInsets.only(left: 50, right: 50),
+                        padding: EdgeInsets.only(right: 50),
                         child: GestureDetector(
                             behavior: HitTestBehavior.translucent,
                             onTap: () {
@@ -67,7 +70,7 @@ class _CommunityMainPageState extends State<CommunityMainPage> {
                                       Icon(
                                           IconData(0xe63a,
                                               fontFamily: 'MyIcons'),
-                                          size: 26,
+                                          size: 18,
                                           color: MyColors.grey_cb),
                                       SizedBox(width: 12),
                                       Text(_hotSearch,
@@ -81,18 +84,13 @@ class _CommunityMainPageState extends State<CommunityMainPage> {
                         padding: EdgeInsets.only(top: 75, left: 18, right: 18),
                         child: Column(children: <Widget>[
                           tabBar(),
-                          SeparatorWidget(),
-                          Container(
-                              width: double.infinity,
-                              height: 45,
-                              padding: EdgeInsets.only(top: 18),
-                              child: topicListView())
+                          SeparatorWidget()
                         ]))),
-                preferredSize: Size.fromHeight(158)),
+                preferredSize: Size.fromHeight(105)),
             body: TabBarView(children: <Widget>[
               FocusWidget(focusLst: _focusLst),
               RecommendWidget(recommendLst: _recommendLst),
-              TopSearchWidget(topSearchLst: _topSearchLst)
+              TopSearchWidget(topSearchLst: _topSearchLst,topicLst: _topicLst)
             ])));
   }
 
@@ -107,47 +105,5 @@ class _CommunityMainPageState extends State<CommunityMainPage> {
         unselectedLabelColor: MyColors.black_1a,
         unselectedLabelStyle: TextStyle(fontSize: 14),
         labelStyle: new TextStyle(fontSize: 16, fontWeight: FontWeight.bold));
-  }
-
-  Widget topicListView() {
-    return ListView.builder(
-        itemBuilder: itemBuilder,
-        itemCount: _topicLst.length,
-        shrinkWrap: true,
-        scrollDirection: Axis.horizontal);
-  }
-
-  Widget itemBuilder(BuildContext context, int index) {
-    Map _topic = _topicLst[index];
-    return Padding(
-        padding: EdgeInsets.only(left: 12),
-        child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTap: () {
-              if (!_topic["isSelected"]) {
-                setState(() {
-                  _topicLst.forEach((item) {
-                    item["isSelected"] = false;
-                  });
-                  _topic["isSelected"] = true;
-                });
-              }
-            },
-            child: Container(
-                padding: EdgeInsets.only(left: 12, right: 12),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(5)),
-                    border: Border.all(
-                        color: _topic["isSelected"] == true
-                            ? MyColors.blue_f6
-                            : MyColors.grey_99),
-                    color: MyColors.grey_fe),
-                child: Center(
-                    child: Text(_topic["type"],
-                        style: TextStyle(
-                            color: _topic["isSelected"] == true
-                                ? MyColors.blue_f6
-                                : MyColors.grey_99,
-                            fontSize: MyFonts.f_14))))));
   }
 }
