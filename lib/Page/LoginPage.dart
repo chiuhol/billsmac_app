@@ -44,10 +44,11 @@ class _LoginPageState extends State<LoginPage>
       try {
         http.Response res = await http.post(Address.login(),
             body: {"phone": userName, "password": password});
+        print(jsonDecode(res.body));
+        if(jsonDecode(res.body)["code"] == 200){}
         LocalStorage.save("Token", jsonDecode(res.body)["token"]);
-        print(jsonDecode(res.body)["stack"]);
-        print(jsonDecode(res.body)["user"]);
-        Navigator.pushReplacementNamed(context, '/HomeMain_Page');
+        print(jsonDecode(res.body)["data"]);
+//        Navigator.pushReplacementNamed(context, '/HomeMain_Page');
       } catch (err) {
         print(err);
         CommonUtil.showMyToast(err);
