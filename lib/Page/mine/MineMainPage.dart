@@ -24,14 +24,31 @@ class _MineMainPageState extends State<MineMainPage> {
   String _nikeName = '来做客';
   int _day = 7;
   String _assistantName = '梁佩诗';
+  String _avatar = "";
 
   @protected
+  _getPersonalMsg()async{
+    _nikeName = await LocalStorage.get("nikeName").then((result) {
+      return result;
+    });
+    _avatar = await LocalStorage.get("avatar_url").then((result) {
+      return result;
+    });
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
+    if(mounted){
+      setState(() {
+        _getPersonalMsg();
+      });
+    }
   }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,7 +88,7 @@ class _MineMainPageState extends State<MineMainPage> {
                                         child: Row(children: <Widget>[
                                       ClipOval(
                                           child: Image.network(
-                                              'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=1379686624,47059782&fm=26&gp=0.jpg',
+                                              "http://116.62.141.151"+_avatar,
                                               width: 60,
                                               height: 60,
                                               fit: BoxFit.cover)),

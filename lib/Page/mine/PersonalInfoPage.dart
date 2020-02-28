@@ -17,8 +17,7 @@ class PersonalInfoPage extends StatefulWidget {
 
 class _PersonalInfoPageState extends State<PersonalInfoPage> {
   String _nikeName = '来做客';
-  String _avatar =
-      "https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=1379686624,47059782&fm=26&gp=0.jpg";
+  String _avatar = "";
   String _sex = "男";
   String _identity = "选择我的身份";
   String _location = "请选择我的所在地";
@@ -44,6 +43,41 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+
+    _getPersonalMsg();
+  }
+
+  @protected
+  _getPersonalMsg()async{
+    _nikeName = await LocalStorage.get("nikeName").then((result) {
+      return result;
+    });
+    _avatar = await LocalStorage.get("avatar_url").then((result) {
+      return result;
+    });
+    _sex = await LocalStorage.get("gender").then((result) {
+      if(result == 'male'){
+        result = "男";
+      }else if(result == 'female'){
+        result = "女";
+      }else{
+        result = "保密";
+      }
+      return result;
+    });
+    _identity = await LocalStorage.get("identity").then((result) {
+      if(result == 'student'){
+        result = "学生";
+      }else if(result == 'office'){
+        result = "上班族";
+      }else{
+        result = "其他";
+      }
+      return result;
+    });
+    _birthday = await LocalStorage.get("birth").then((result) {
+      return result;
+    });
   }
 
   @protected
@@ -324,7 +358,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                   parent: AlwaysScrollableScrollPhysics()),
               child: Column(children: <Widget>[
                 SizedBox(height: 2),
-                builder("头像", _avatar, _updateAvatar),
+                builder("头像", "116.62.141.151"+_avatar, _updateAvatar),
                 SeparatorWidget(),
                 builder("昵称", _nikeName, () {}),
                 SizedBox(height: 12),

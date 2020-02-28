@@ -191,10 +191,10 @@ class _SettingMainPageState extends State<SettingMainPage> {
                   GestureDetector(
                       behavior: HitTestBehavior.translucent,
                       onTap: () async{
-                        String _token = await LocalStorage.get("Token").then((value){
-                          return value;
-                        });
-                        Apifm.loginout(_token);
+//                        String _token = await LocalStorage.get("Token").then((value){
+//                          return value;
+//                        });
+//                        Apifm.loginout(_token);
                         CommonUtil.openPage(context, LoginPage());
                       },
                       child: Container(

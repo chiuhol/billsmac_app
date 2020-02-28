@@ -34,21 +34,41 @@ class _LoginPageState extends State<LoginPage>
     //验证Form表单
     if (loginForm.validate()) {
       loginForm.save();
-      print('userName: ' + userName + ' password: ' + password);
-      String _deviceId = await LocalStorage.get("DeviceId").then((result) {
-        return result;
-      });
-      String _deviceName = await LocalStorage.get("DeviceName").then((result) {
-        return result;
-      });
+      if (userName == '') {
+        CommonUtil.showMyToast("请输入手机号");
+        return;
+      }
+      if (password == '') {
+        CommonUtil.showMyToast("请输入密码");
+        return;
+      }
+//      String _deviceId = await LocalStorage.get("DeviceId").then((result) {
+//        return result;
+//      });
+//      String _deviceName = await LocalStorage.get("DeviceName").then((result) {
+//        return result;
+//      });
       try {
         http.Response res = await http.post(Address.login(),
             body: {"phone": userName, "password": password});
         print(jsonDecode(res.body));
-        if(jsonDecode(res.body)["code"] == 200){}
-        LocalStorage.save("Token", jsonDecode(res.body)["token"]);
-        print(jsonDecode(res.body)["data"]);
-//        Navigator.pushReplacementNamed(context, '/HomeMain_Page');
+        if (jsonDecode(res.body)["status"] == 200) {
+          LocalStorage.save("token", jsonDecode(res.body)["data"]["token"]);
+          var _user = jsonDecode(res.body)["data"]["user"];
+          LocalStorage.save("nikeName", _user["nikeName"]);
+          LocalStorage.save("gender", _user["gender"]);
+          LocalStorage.save("_id", _user["_id"]);
+          LocalStorage.save("identity", _user["identity"]);
+          LocalStorage.save("birth", _user["birth"]);
+          LocalStorage.save(
+              "avatar_url", _user["avatar_url"].toString().substring(21));
+          LocalStorage.save("remindTime", _user["remindTime"]);
+          LocalStorage.save("phone", _user["phone"]);
+          Navigator.pushReplacementNamed(context, '/HomeMain_Page');
+        } else {
+          print(jsonDecode(res.body)["message"]);
+          CommonUtil.showMyToast(jsonDecode(res.body)["message"]);
+        }
       } catch (err) {
         print(err);
         CommonUtil.showMyToast(err);
@@ -97,48 +117,43 @@ class _LoginPageState extends State<LoginPage>
                           autovalidate: true,
                           child: new Column(children: <Widget>[
                             new Container(
-                              decoration: new BoxDecoration(
-                                  border: new Border(
-                                      bottom: BorderSide(
-                                          color: Color.fromARGB(
-                                              255, 240, 240, 240),
-                                          width: 1.0))),
-                              child: new TextFormField(
-                                controller: _phoneController,
-                                cursorColor: MyColors.orange_68,
-                                decoration: new InputDecoration(
-                                  hintText: '请输入手机号',
-                                  hintStyle: TextStyle(
-                                      fontSize: 15.0, color: MyColors.grey_cb),
-                                  border: InputBorder.none,
-                                  prefixIcon: Icon(
-                                      IconData(0xe620, fontFamily: 'MyIcons'),
-                                      size: 15,
-                                      color: MyColors.grey_cb),
-                                  suffixIcon: new IconButton(
-                                    icon: new Icon(
-                                      Icons.close,
-                                      color: Color.fromARGB(255, 126, 126, 126),
+                                decoration: new BoxDecoration(
+                                    border: new Border(
+                                        bottom: BorderSide(
+                                            color: Color.fromARGB(
+                                                255, 240, 240, 240),
+                                            width: 1.0))),
+                                child: new TextFormField(
+                                    controller: _phoneController,
+                                    cursorColor: MyColors.orange_68,
+                                    decoration: new InputDecoration(
+                                      hintText: '请输入手机号',
+                                      hintStyle: TextStyle(
+                                          fontSize: 15.0,
+                                          color: MyColors.grey_cb),
+                                      border: InputBorder.none,
+                                      prefixIcon: Icon(
+                                          IconData(0xe620,
+                                              fontFamily: 'MyIcons'),
+                                          size: 15,
+                                          color: MyColors.grey_cb),
+                                      suffixIcon: new IconButton(
+                                        icon: new Icon(Icons.close,
+                                            color: Color.fromARGB(
+                                                255, 126, 126, 126)),
+                                        onPressed: () {
+                                          setState(() {
+                                            WidgetsBinding.instance
+                                                .addPostFrameCallback((_) =>
+                                                    _phoneController.clear());
+                                          });
+                                        },
+                                      ),
                                     ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _phoneController.clear();
-                                      });
-                                    },
-                                  ),
-                                ),
-                                keyboardType: TextInputType.phone,
-                                onSaved: (value) {
-                                  userName = value;
-                                },
-//                        validator: (phone) {
-//                           if(phone.length == 0){
-//                             return '请输入手机号';
-//                           }
-//                        },
-                                onFieldSubmitted: (value) {},
-                              ),
-                            ),
+                                    keyboardType: TextInputType.phone,
+                                    onSaved: (value) {
+                                      userName = value;
+                                    })),
                             new Container(
                                 decoration: new BoxDecoration(
                                     border: new Border(

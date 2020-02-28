@@ -1,4 +1,5 @@
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Page/community/DetailPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -37,6 +38,15 @@ class _TopSearchWidgetState extends State<TopSearchWidget> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    print('2222222222222222');
+    print(widget.topSearchLst);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
         width: double.infinity,
@@ -44,12 +54,7 @@ class _TopSearchWidgetState extends State<TopSearchWidget> {
         color: MyColors.white_fe,
         child: AnimationLimiter(
             child: Column(children: <Widget>[
-          Container(
-              width: double.infinity,
-              height: 45,
-              padding: EdgeInsets.only(top: 18,right: 12),
-              child: topicListView()),
-          SizedBox(height: 8),
+          Container(width: double.infinity, height: 30, child: topicListView()),
           Expanded(
               child: SmartRefresher(
                   controller: _refreshController,
@@ -78,7 +83,7 @@ class _TopSearchWidgetState extends State<TopSearchWidget> {
                               style: TextStyle(
                                   color: MyColors.grey_cb,
                                   fontSize: MyFonts.f_16)))
-                      : Container()))
+                      : topSearchListView()))
         ])));
   }
 
@@ -98,7 +103,7 @@ class _TopSearchWidgetState extends State<TopSearchWidget> {
             behavior: HitTestBehavior.translucent,
             onTap: () {
               if (!_topic["isSelected"]) {
-                if(mounted){
+                if (mounted) {
                   setState(() {
                     widget.topicLst.forEach((item) {
                       item["isSelected"] = false;
@@ -124,5 +129,111 @@ class _TopSearchWidgetState extends State<TopSearchWidget> {
                                 ? MyColors.blue_f6
                                 : MyColors.grey_99,
                             fontSize: MyFonts.f_14))))));
+  }
+
+  Widget topSearchListView() {
+    return ListView.builder(
+        itemBuilder: topSearchItemBuilder,
+        itemCount: widget.topSearchLst.length,
+        shrinkWrap: true);
+  }
+
+  Widget topSearchItemBuilder(BuildContext context, int index) {
+    Map _topSearch = widget.topSearchLst[index];
+    return Padding(
+        padding: EdgeInsets.only(left: 12),
+        child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              if (_topSearch["_id"] != null && _topSearch["_id"] != '') {
+                CommonUtil.openPage(
+                    context, DetailPage(articleId: _topSearch["_id"]));
+              } else {
+                CommonUtil.showMyToast("请刷新页面");
+              }
+            },
+            child: Column(children: <Widget>[
+              index == 0 ? SizedBox(height: 18) : SizedBox(),
+              Container(
+                  color: MyColors.white_fe,
+                  padding: EdgeInsets.only(top: 18, bottom: 18),
+                  child: Row(children: <Widget>[
+                    Expanded(
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                          icon(index),
+                          SizedBox(width: 8),
+                          Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(_topSearch["title"] ?? "",
+                                    style: TextStyle(
+                                        color: MyColors.black_1a,
+                                        fontSize: MyFonts.f_16,
+                                        fontWeight: (index == 0 ||
+                                                index == 1 ||
+                                                index == 2)
+                                            ? FontWeight.bold
+                                            : FontWeight.normal)),
+                                SizedBox(height: 5),
+                                _topSearch["subTitle"] != null
+                                    ? Text(_topSearch["subTitle"],
+                                        style: TextStyle(
+                                            color: MyColors.grey_99,
+                                            fontSize: MyFonts.f_15))
+                                    : Text(''),
+                                SizedBox(height: 5),
+                                Text(_topSearch["UnitTen"].toString() + "热度",
+                                    style: TextStyle(
+                                        color: MyColors.grey_99,
+                                        fontSize: MyFonts.f_15))
+                              ])
+                        ])),
+                    (_topSearch["thumbnail"] != null &&
+                            _topSearch["thumbnail"] != '')
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.network(
+                                "http://116.62.141.151" +
+                                    _topSearch["thumbnail"]
+                                        .toString()
+                                        .substring(21),
+                                width: 80,
+                                height: 60))
+                        : Container()
+                  ])),
+              SeparatorWidget()
+            ])));
+  }
+
+  Widget icon(int idx) {
+    if (idx == 0) {
+      return Icon(
+        Icons.looks_one,
+        color: MyColors.red_5c,
+        size: 24,
+      );
+    } else if (idx == 1) {
+      return Icon(
+        Icons.looks_two,
+        color: MyColors.orange_68,
+        size: 24,
+      );
+    } else if (idx == 2) {
+      return Icon(
+        Icons.looks_3,
+        color: MyColors.orange_76,
+        size: 24,
+      );
+    } else {
+      return Padding(
+          padding: EdgeInsets.only(left: 8, right: 5),
+          child: Text((idx + 1).toString(),
+              style: TextStyle(
+                  color: MyColors.grey_99,
+                  fontSize: MyFonts.f_18,
+                  fontWeight: FontWeight.bold)));
+    }
   }
 }

@@ -1,5 +1,9 @@
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
+
+import 'DetailPage.dart';
 
 ///Author:chiuhol
 ///2020-2-24
@@ -12,6 +16,7 @@ class SearchMainPage extends StatefulWidget {
 class _SearchMainPageState extends State<SearchMainPage> {
   TextEditingController _searchController = TextEditingController();
 
+  List _articleLst = [];
   List _historyLst = [];
   bool _isSearch = false;
 
@@ -24,20 +29,33 @@ class _SearchMainPageState extends State<SearchMainPage> {
     _historyLst.add({"id": 4, "content": "测试4测试4"});
   }
 
+  @protected
+  _search(String content) async {
+    try {
+      BaseOptions options =
+          BaseOptions(method: "get", queryParameters: {"q": content});
+      var dio = new Dio(options);
+      var response = await dio.get(Address.getActicles());
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        if (mounted) {
+          setState(() {
+            _articleLst = response.data["data"]["acticle"];
+            _isSearch = true;
+          });
+        }
+      }
+    } catch (err) {
+      CommonUtil.showMyToast(err.toString());
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
     _getData();
-  }
-
-  @protected
-  _search(String content) {
-    print("搜索" + content);
-    setState(() {
-      _isSearch = true;
-    });
   }
 
   @override
@@ -77,7 +95,85 @@ class _SearchMainPageState extends State<SearchMainPage> {
                     _historyLst.length == 0 ? Container() : searchHistory(),
                     historyWidget()
                   ])
-                : Container()));
+                : _articleLst.length == 0?Container(alignment:Alignment.center,child: Text('暂无你要搜索的内容~',style: TextStyle(
+              color: MyColors.grey_cb,
+              fontSize: MyFonts.f_16
+            ))):ListView.builder(itemBuilder: searchItemBuilder,itemCount: _articleLst.length,shrinkWrap: true)));
+  }
+
+  Widget searchItemBuilder(BuildContext context,int index){
+    Map _article = _articleLst[index];
+    return Padding(
+        padding: EdgeInsets.only(left: 12),
+        child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              if (_article["_id"] != null && _article["_id"] != '') {
+                CommonUtil.openPage(
+                    context, DetailPage(articleId: _article["_id"]));
+              } else {
+                CommonUtil.showMyToast("请刷新页面");
+              }
+            },
+            child: Column(children: <Widget>[
+              index == 0 ? SizedBox(height: 18) : SizedBox(),
+              Container(
+                  color: MyColors.white_fe,
+                  padding: EdgeInsets.only(top: 18, bottom: 18),
+                  child: Row(children: <Widget>[
+                    Expanded(
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Padding(
+                                  padding: EdgeInsets.only(left: 8, right: 5),
+                                  child: Text((index + 1).toString(),
+                                      style: TextStyle(
+                                          color: MyColors.grey_99,
+                                          fontSize: MyFonts.f_18,
+                                          fontWeight: FontWeight.bold))),
+                              SizedBox(width: 8),
+                              Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text(_article["title"] ?? "",
+                                        style: TextStyle(
+                                            color: MyColors.black_1a,
+                                            fontSize: MyFonts.f_16,
+                                            fontWeight: (index == 0 ||
+                                                index == 1 ||
+                                                index == 2)
+                                                ? FontWeight.bold
+                                                : FontWeight.normal)),
+                                    SizedBox(height: 5),
+                                    _article["subTitle"] != null
+                                        ? Text(_article["subTitle"],
+                                        style: TextStyle(
+                                            color: MyColors.grey_99,
+                                            fontSize: MyFonts.f_15))
+                                        : Text(''),
+                                    SizedBox(height: 5),
+                                    Text(_article["UnitTen"].toString() + "热度",
+                                        style: TextStyle(
+                                            color: MyColors.grey_99,
+                                            fontSize: MyFonts.f_15))
+                                  ])
+                            ])),
+                    (_article["thumbnail"] != null &&
+                        _article["thumbnail"] != '')
+                        ? ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.network(
+                            "http://116.62.141.151" +
+                                _article["thumbnail"]
+                                    .toString()
+                                    .substring(21),
+                            width: 80,
+                            height: 60))
+                        : Container()
+                  ])),
+              SeparatorWidget()
+            ])));
   }
 
   Widget searchWidget() {
@@ -128,7 +224,7 @@ class _SearchMainPageState extends State<SearchMainPage> {
               GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onTap: () {
-                    if(mounted){
+                    if (mounted) {
                       setState(() {
                         _historyLst.removeRange(0, _historyLst.length);
                       });
@@ -154,10 +250,10 @@ class _SearchMainPageState extends State<SearchMainPage> {
       GestureDetector(
           behavior: HitTestBehavior.translucent,
           onTap: () {
-            if(mounted){
-            setState(() {
-            _searchController.text = _history["content"];
-            });
+            if (mounted) {
+              setState(() {
+                _searchController.text = _history["content"];
+              });
             }
             _search(_history["content"]);
           },
@@ -178,7 +274,7 @@ class _SearchMainPageState extends State<SearchMainPage> {
                     GestureDetector(
                         behavior: HitTestBehavior.translucent,
                         onTap: () {
-                          if(mounted){
+                          if (mounted) {
                             setState(() {
                               _historyLst.removeAt(index);
                             });

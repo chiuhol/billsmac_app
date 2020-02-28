@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:billsmac_app/Common/CommonInsert.dart';
 import 'package:billsmac_app/Widget/community/FocusWidget.dart';
 import 'package:billsmac_app/Widget/community/RecommendWidget.dart';
 import 'package:billsmac_app/Widget/community/TopSearchWidget.dart';
+import 'package:http/http.dart' as http;
 
 import 'ArticleMainPage.dart';
 import 'SearchMainPage.dart';
@@ -36,11 +39,28 @@ class _CommunityMainPageState extends State<CommunityMainPage> {
   List _recommendLst = [];
   List _topSearchLst = [];
 
+  @protected
+  _getData()async{
+    try {
+      http.Response res = await http.get(Address.getActicles());
+      if (jsonDecode(res.body)["status"] == 200) {
+        setState(() {
+          _topSearchLst = jsonDecode(res.body)["data"]["acticle"];
+        });
+      } else {
+        CommonUtil.showMyToast(jsonDecode(res.body)["message"]);
+      }
+    } catch (err) {
+      CommonUtil.showMyToast(err);
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
+    _getData();
   }
 
   Widget build(BuildContext context) {
@@ -51,33 +71,31 @@ class _CommunityMainPageState extends State<CommunityMainPage> {
             appBar: PreferredSize(
                 child: AppBar(
                     elevation: 0,
-                    title: Padding(
-                        padding: EdgeInsets.only(right: 50),
-                        child: GestureDetector(
-                            behavior: HitTestBehavior.translucent,
-                            onTap: () {
-                              CommonUtil.openPage(context, SearchMainPage());
-                            },
-                            child: Container(
-                                padding: EdgeInsets.only(top: 8, bottom: 8),
-                                decoration: BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(10.0)),
-                                    color: MyColors.grey_f0),
-                                child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(
-                                          IconData(0xe63a,
-                                              fontFamily: 'MyIcons'),
-                                          size: 18,
-                                          color: MyColors.grey_cb),
-                                      SizedBox(width: 12),
-                                      Text(_hotSearch,
-                                          style: TextStyle(
-                                              color: MyColors.grey_cb,
-                                              fontSize: MyFonts.f_16))
-                                    ])))),
+                    title: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: () {
+                          CommonUtil.openPage(context, SearchMainPage());
+                        },
+                        child: Container(
+                            padding: EdgeInsets.only(top: 8, bottom: 8),
+                            decoration: BoxDecoration(
+                                borderRadius:
+                                BorderRadius.all(Radius.circular(10.0)),
+                                color: MyColors.grey_f0),
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Icon(
+                                      IconData(0xe63a,
+                                          fontFamily: 'MyIcons'),
+                                      size: 18,
+                                      color: MyColors.grey_cb),
+                                  SizedBox(width: 12),
+                                  Text(_hotSearch,
+                                      style: TextStyle(
+                                          color: MyColors.grey_cb,
+                                          fontSize: MyFonts.f_16))
+                                ]))),
                     backgroundColor: MyColors.white_fe,
                     centerTitle: true,
                     flexibleSpace: Container(
