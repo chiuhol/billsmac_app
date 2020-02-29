@@ -25,42 +25,10 @@ class _CommunityMainPageState extends State<CommunityMainPage> {
   ];
   String _hotSearch = '开窗通风会传播病毒吗';
 
-  List _topicLst = [
-    {"type": "全站", "isSelected": false},
-    {"type": "科学", "isSelected": false},
-    {"type": "数码", "isSelected": false},
-    {"type": "理财", "isSelected": false},
-    {"type": "体育", "isSelected": false},
-    {"type": "时尚", "isSelected": false},
-    {"type": "美食", "isSelected": false}
-  ];
-
-  List _focusLst = [];
-  List _recommendLst = [];
-  List _topSearchLst = [];
-
-  @protected
-  _getData()async{
-    try {
-      http.Response res = await http.get(Address.getActicles());
-      if (jsonDecode(res.body)["status"] == 200) {
-        setState(() {
-          _topSearchLst = jsonDecode(res.body)["data"]["acticle"];
-        });
-      } else {
-        CommonUtil.showMyToast(jsonDecode(res.body)["message"]);
-      }
-    } catch (err) {
-      CommonUtil.showMyToast(err);
-    }
-  }
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-
-    _getData();
   }
 
   Widget build(BuildContext context) {
@@ -106,9 +74,9 @@ class _CommunityMainPageState extends State<CommunityMainPage> {
                         ]))),
                 preferredSize: Size.fromHeight(105)),
             body: TabBarView(children: <Widget>[
-              FocusWidget(focusLst: _focusLst),
-              RecommendWidget(recommendLst: _recommendLst),
-              TopSearchWidget(topSearchLst: _topSearchLst,topicLst: _topicLst)
+              FocusWidget(),
+              RecommendWidget(),
+              TopSearchWidget()
             ])));
   }
 

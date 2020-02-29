@@ -2,6 +2,7 @@ import 'package:billsmac_app/Common/CommonInsert.dart';
 import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'DetailPage.dart';
 
@@ -21,15 +22,6 @@ class _SearchMainPageState extends State<SearchMainPage> {
   bool _isSearch = false;
 
   @protected
-  _getData() {
-    _historyLst.add({"id": 0, "content": "测试0测试0测试0测试0"});
-    _historyLst.add({"id": 1, "content": "测试1测试1测试1测试1测试1测试1"});
-    _historyLst.add({"id": 2, "content": "测试2测试2测试2测试2"});
-    _historyLst.add({"id": 3, "content": "测试3测试3测试3测试3测试3测试3"});
-    _historyLst.add({"id": 4, "content": "测试4测试4"});
-  }
-
-  @protected
   _search(String content) async {
     try {
       BaseOptions options =
@@ -44,9 +36,46 @@ class _SearchMainPageState extends State<SearchMainPage> {
             _isSearch = true;
           });
         }
+        _saveHistory(content);
       }
     } catch (err) {
       CommonUtil.showMyToast(err.toString());
+    }
+  }
+
+  @protected
+  _saveHistory(String content)async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> _allSearchLst = prefs.getStringList("SearchHistoryLst");//先查
+    _allSearchLst.insert(0, content);//合并
+    prefs.setStringList("SearchHistoryLst", _allSearchLst);//再存
+    _getHistory();
+  }
+
+  @protected
+  _getHistory()async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if(mounted){
+      setState(() {
+        List _lst = prefs.getStringList("SearchHistoryLst");
+        if(_lst.length <= 9){
+          _historyLst = _lst;
+        }else{
+          _historyLst = _lst.sublist(0,10);
+        }
+      });
+    }
+  }
+
+  @protected
+  _removeHistory(int idx,bool isAll)async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> _allSearchLst = prefs.getStringList("SearchHistoryLst");//先查
+    if(isAll){
+      prefs.setStringList("SearchHistoryLst", []);//再存
+    }else{
+      _allSearchLst.removeAt(idx);//清除某项
+      prefs.setStringList("SearchHistoryLst", _allSearchLst);//再存
     }
   }
 
@@ -55,7 +84,7 @@ class _SearchMainPageState extends State<SearchMainPage> {
     // TODO: implement initState
     super.initState();
 
-    _getData();
+    _getHistory();
   }
 
   @override
@@ -91,17 +120,26 @@ class _SearchMainPageState extends State<SearchMainPage> {
             height: double.infinity,
             color: MyColors.white_fe,
             child: _isSearch == false
-                ? Column(children: <Widget>[
-                    _historyLst.length == 0 ? Container() : searchHistory(),
-                    historyWidget()
-                  ])
-                : _articleLst.length == 0?Container(alignment:Alignment.center,child: Text('暂无你要搜索的内容~',style: TextStyle(
-              color: MyColors.grey_cb,
-              fontSize: MyFonts.f_16
-            ))):ListView.builder(itemBuilder: searchItemBuilder,itemCount: _articleLst.length,shrinkWrap: true)));
+                ? SingleChildScrollView(
+              child: Column(children: <Widget>[
+                _historyLst.length == 0 ? Container() : searchHistory(),
+                historyWidget()
+              ])
+            )
+                : _articleLst.length == 0
+                    ? Container(
+                        alignment: Alignment.center,
+                        child: Text('暂无你要搜索的内容~',
+                            style: TextStyle(
+                                color: MyColors.grey_cb,
+                                fontSize: MyFonts.f_16)))
+                    : ListView.builder(
+                        itemBuilder: searchItemBuilder,
+                        itemCount: _articleLst.length,
+                        shrinkWrap: true)));
   }
 
-  Widget searchItemBuilder(BuildContext context,int index){
+  Widget searchItemBuilder(BuildContext context, int index) {
     Map _article = _articleLst[index];
     return Padding(
         padding: EdgeInsets.only(left: 12),
@@ -125,51 +163,51 @@ class _SearchMainPageState extends State<SearchMainPage> {
                         child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Padding(
-                                  padding: EdgeInsets.only(left: 8, right: 5),
-                                  child: Text((index + 1).toString(),
-                                      style: TextStyle(
-                                          color: MyColors.grey_99,
-                                          fontSize: MyFonts.f_18,
-                                          fontWeight: FontWeight.bold))),
-                              SizedBox(width: 8),
-                              Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(_article["title"] ?? "",
-                                        style: TextStyle(
-                                            color: MyColors.black_1a,
-                                            fontSize: MyFonts.f_16,
-                                            fontWeight: (index == 0 ||
+                          Padding(
+                              padding: EdgeInsets.only(left: 8, right: 5),
+                              child: Text((index + 1).toString(),
+                                  style: TextStyle(
+                                      color: MyColors.grey_99,
+                                      fontSize: MyFonts.f_18,
+                                      fontWeight: FontWeight.bold))),
+                          SizedBox(width: 8),
+                          Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(_article["title"] ?? "",
+                                    style: TextStyle(
+                                        color: MyColors.black_1a,
+                                        fontSize: MyFonts.f_16,
+                                        fontWeight: (index == 0 ||
                                                 index == 1 ||
                                                 index == 2)
-                                                ? FontWeight.bold
-                                                : FontWeight.normal)),
-                                    SizedBox(height: 5),
-                                    _article["subTitle"] != null
-                                        ? Text(_article["subTitle"],
+                                            ? FontWeight.bold
+                                            : FontWeight.normal)),
+                                SizedBox(height: 5),
+                                _article["subTitle"] != null
+                                    ? Text(_article["subTitle"],
                                         style: TextStyle(
                                             color: MyColors.grey_99,
                                             fontSize: MyFonts.f_15))
-                                        : Text(''),
-                                    SizedBox(height: 5),
-                                    Text(_article["UnitTen"].toString() + "热度",
-                                        style: TextStyle(
-                                            color: MyColors.grey_99,
-                                            fontSize: MyFonts.f_15))
-                                  ])
-                            ])),
+                                    : Text(''),
+                                SizedBox(height: 5),
+                                Text(_article["UnitTen"].toString() + "热度",
+                                    style: TextStyle(
+                                        color: MyColors.grey_99,
+                                        fontSize: MyFonts.f_15))
+                              ])
+                        ])),
                     (_article["thumbnail"] != null &&
-                        _article["thumbnail"] != '')
+                            _article["thumbnail"] != '')
                         ? ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
-                            "http://116.62.141.151" +
-                                _article["thumbnail"]
-                                    .toString()
-                                    .substring(21),
-                            width: 80,
-                            height: 60))
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.network(
+                                "http://116.62.141.151" +
+                                    _article["thumbnail"]
+                                        .toString()
+                                        .substring(21),
+                                width: 80,
+                                height: 60))
                         : Container()
                   ])),
               SeparatorWidget()
@@ -227,6 +265,7 @@ class _SearchMainPageState extends State<SearchMainPage> {
                     if (mounted) {
                       setState(() {
                         _historyLst.removeRange(0, _historyLst.length);
+                        _removeHistory(0, true);
                       });
                     }
                   },
@@ -245,17 +284,16 @@ class _SearchMainPageState extends State<SearchMainPage> {
   }
 
   Widget itemBuilder(BuildContext context, int index) {
-    Map _history = _historyLst[index];
     return Column(children: <Widget>[
       GestureDetector(
           behavior: HitTestBehavior.translucent,
           onTap: () {
             if (mounted) {
               setState(() {
-                _searchController.text = _history["content"];
+                _searchController.text = _historyLst[index];
+                _search(_historyLst[index]);
               });
             }
-            _search(_history["content"]);
           },
           child: Padding(
               padding:
@@ -267,7 +305,7 @@ class _SearchMainPageState extends State<SearchMainPage> {
                       Icon(Icons.access_time,
                           color: MyColors.grey_cb, size: 18),
                       SizedBox(width: 12),
-                      Text(_history["content"] ?? "",
+                      Text(_historyLst[index] ?? "",
                           style: TextStyle(
                               color: MyColors.black_32, fontSize: MyFonts.f_14))
                     ]),
@@ -277,6 +315,7 @@ class _SearchMainPageState extends State<SearchMainPage> {
                           if (mounted) {
                             setState(() {
                               _historyLst.removeAt(index);
+                              _removeHistory(index,false);
                             });
                           }
                         },

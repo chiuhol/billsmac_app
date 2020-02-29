@@ -27,6 +27,8 @@ class LocalStorage {
       prefs.setDouble(key, value);
     } else if (value is bool) {
       prefs.setBool(key, value);
+    }else if(value is List){
+      prefs.setStringList(key, value);
     }
   }
 

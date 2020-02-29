@@ -1,5 +1,6 @@
 import 'package:billsmac_app/Common/CommonInsert.dart';
 import 'package:billsmac_app/Page/community/DetailPage.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -8,32 +9,45 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 ///2020-2-24
 
 class TopSearchWidget extends StatefulWidget {
-  final List topSearchLst;
   final List topicLst;
 
-  TopSearchWidget({this.topSearchLst, this.topicLst});
+  TopSearchWidget({this.topicLst});
 
   @override
   _TopSearchWidgetState createState() => _TopSearchWidgetState();
 }
 
-class _TopSearchWidgetState extends State<TopSearchWidget> {
+class _TopSearchWidgetState extends State<TopSearchWidget>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+  List _articleLst = [];
+  
   int _pageIndex = 1;
+
+  List _topicLst = [
+    {"type": "全站", "isSelected": false},
+    {"type": "科学", "isSelected": false},
+    {"type": "数码", "isSelected": false},
+    {"type": "理财", "isSelected": false},
+    {"type": "体育", "isSelected": false},
+    {"type": "时尚", "isSelected": false},
+    {"type": "美食", "isSelected": false}
+  ];
 
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
 
   void _onRefresh() async {
-//    _articleLst = [];
-//    _pageIndex = 1;
-//    loadData_dio_get();
+    _pageIndex = 1;
+    _articleLst = [];
+    _search();
     _refreshController.refreshCompleted();
   }
 
   void _onLoading() async {
-//    _pageIndex += 1;
-//    loadData_dio_get();
-
+    _pageIndex++;
+    _search();
     _refreshController.loadComplete();
   }
 
@@ -42,8 +56,26 @@ class _TopSearchWidgetState extends State<TopSearchWidget> {
     // TODO: implement initState
     super.initState();
 
-    print('2222222222222222');
-    print(widget.topSearchLst);
+    _search();
+  }
+
+  @protected
+  _search() async {
+    try {
+      BaseOptions options = BaseOptions(method: "get", queryParameters: {"page":_pageIndex,"per_Page":10});
+      var dio = new Dio(options);
+      var response = await dio.get(Address.getActicles());
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        if (mounted) {
+          setState(() {
+            _articleLst.addAll(response.data["data"]["acticle"]);
+          });
+        }
+      }
+    } catch (err) {
+      CommonUtil.showMyToast(err.toString());
+    }
   }
 
   @override
@@ -77,7 +109,7 @@ class _TopSearchWidgetState extends State<TopSearchWidget> {
                     }
                     return Container(height: 55, child: Center(child: body));
                   }),
-                  child: widget.topSearchLst.length == 0
+                  child: _topicLst.length == 0
                       ? Center(
                           child: Text('暂时还没有热搜的文章',
                               style: TextStyle(
@@ -90,13 +122,13 @@ class _TopSearchWidgetState extends State<TopSearchWidget> {
   Widget topicListView() {
     return ListView.builder(
         itemBuilder: itemBuilder,
-        itemCount: widget.topicLst.length,
+        itemCount: _topicLst.length,
         shrinkWrap: true,
         scrollDirection: Axis.horizontal);
   }
 
   Widget itemBuilder(BuildContext context, int index) {
-    Map _topic = widget.topicLst[index];
+    Map _topic = _topicLst[index];
     return Padding(
         padding: EdgeInsets.only(left: 12),
         child: GestureDetector(
@@ -134,12 +166,12 @@ class _TopSearchWidgetState extends State<TopSearchWidget> {
   Widget topSearchListView() {
     return ListView.builder(
         itemBuilder: topSearchItemBuilder,
-        itemCount: widget.topSearchLst.length,
+        itemCount: _articleLst.length,
         shrinkWrap: true);
   }
 
   Widget topSearchItemBuilder(BuildContext context, int index) {
-    Map _topSearch = widget.topSearchLst[index];
+    Map _topSearch = _articleLst[index];
     return Padding(
         padding: EdgeInsets.only(left: 12),
         child: GestureDetector(
