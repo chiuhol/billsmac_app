@@ -24,7 +24,6 @@ class _TallyDetailPageState extends State<TallyDetailPage> {
 
   @protected
   _updateRecord(Map msg) async {
-    print(msg);
     String _chatroomId = await LocalStorage.get("chatroomId").then((result) {
       return result;
     });
@@ -37,7 +36,7 @@ class _TallyDetailPageState extends State<TallyDetailPage> {
           headers: {HttpHeaders.AUTHORIZATION: "Bearer $_token"});
       var dio = new Dio(options);
       var response = await dio.patch(
-          Address.updateChatContent(_chatroomId, widget.detail["id"]),
+          Address.updateChatContent(_chatroomId, widget.detail["_id"]),
           data: msg);
       print(response.data.toString());
       if (response.data["status"] == 200) {
@@ -103,8 +102,8 @@ class _TallyDetailPageState extends State<TallyDetailPage> {
     // TODO: implement initState
     super.initState();
 
-    _remarkController.text = widget.detail["remark"] ?? "";
-    _account = widget.detail["amount"] ?? "";
+    _remarkController.text = widget.detail["rightcontent"]["remark"] ?? "";
+    _account = widget.detail["rightcontent"]["amount"] ?? "";
   }
 
   Widget build(BuildContext context) {
@@ -116,12 +115,12 @@ class _TallyDetailPageState extends State<TallyDetailPage> {
                 color: MyColors.black_32, size: 28),
             color: MyColors.grey_f6,
             backEvent: () {
-              if (_remarkController.text != widget.detail["remark"] ||
-                  _account != widget.detail["amount"]) {
+              if (_remarkController.text != widget.detail["rightcontent"]["remark"] ||
+                  _account != widget.detail["rightcontent"]["amount"]) {
                 _updateRecord({
                   "rightcontent": {
-                    "typeStr": widget.detail["typeStr"],
-                    "amountType": widget.detail["amountType"],
+                    "typeStr": widget.detail["rightcontent"]["typeStr"],
+                    "amountType": widget.detail["rightcontent"]["amountType"],
                     "amount": _account,
                     "remark": _remarkController.text
                   }
@@ -160,7 +159,7 @@ class _TallyDetailPageState extends State<TallyDetailPage> {
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        Text(widget.detail["typeStr"] ?? "",
+                        Text(widget.detail["rightcontent"]["typeStr"] ?? "",
                             style: TextStyle(
                                 color: MyColors.black_1a,
                                 fontSize: MyFonts.f_16)),
@@ -184,7 +183,7 @@ class _TallyDetailPageState extends State<TallyDetailPage> {
                         style: TextStyle(
                             color: MyColors.grey_cb, fontSize: MyFonts.f_16)),
                     Row(children: <Widget>[
-                      Text(widget.detail["createAt"].substring(0, 10) ?? "",
+                      Text(widget.detail["createdAt"] != null ?widget.detail["createdAt"].toString().substring(0, 10) : "",
                           style: TextStyle(
                               color: MyColors.black_1a,
                               fontSize: MyFonts.f_16)),

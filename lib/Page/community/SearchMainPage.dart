@@ -16,6 +16,7 @@ class SearchMainPage extends StatefulWidget {
 
 class _SearchMainPageState extends State<SearchMainPage> {
   TextEditingController _searchController = TextEditingController();
+  FocusNode _searchFocusNode = FocusNode();
 
   List _articleLst = [];
   List _historyLst = [];
@@ -107,6 +108,7 @@ class _SearchMainPageState extends State<SearchMainPage> {
                           GestureDetector(
                               behavior: HitTestBehavior.translucent,
                               onTap: () {
+                                _searchFocusNode.unfocus();
                                 CommonUtil.closePage(context);
                               },
                               child: Text("取消",
@@ -237,6 +239,7 @@ class _SearchMainPageState extends State<SearchMainPage> {
                       _search(value);
                     }
                   },
+                  focusNode: _searchFocusNode,
                   autofocus: true,
                   cursorColor: MyColors.orange_68,
                   decoration: InputDecoration(

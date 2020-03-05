@@ -376,8 +376,7 @@ class _TallyMainPageState extends State<TallyMainPage>
     Map _chat = _chatContentLst[index];
     return Column(children: <Widget>[
       time(_chat["createdAt"]),
-      rightObject(_chat["_id"],_chat["rightcontent"]["typeStr"],
-          _chat["rightcontent"]["amount"], _chat["rightcontent"]["amountType"],_chat["rightcontent"]["remark"],_chat["createdAt"]),
+      rightObject(_chat),
 //      leftObject(_chat["replyContent"])
     ]);
   }
@@ -414,23 +413,16 @@ class _TallyMainPageState extends State<TallyMainPage>
         ]));
   }
 
-  Widget rightObject(String id,String content, String amount,String amountType,String remark, String createAt) {
+  Widget rightObject(Map chatContent) {
     return GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () {
           CommonUtil.openPage(
               context,
-              TallyDetailPage(detail: {
-                "id":id,
-                "createAt": createAt,
-                "typeStr": content,
-                "amount": amount,
-                "amountType": amountType,
-                "remark":remark
-              })).then((value){
-                if(value != null && value == "success"){
-                  _getChatContent();
-                }
+              TallyDetailPage(detail: chatContent)).then((value) {
+            if (value != null && value == "success") {
+              _getChatContent();
+            }
           });
         },
         child: Container(
@@ -449,7 +441,15 @@ class _TallyMainPageState extends State<TallyMainPage>
                       child: Padding(
                           padding: EdgeInsets.only(
                               left: 18, right: 18, top: 12, bottom: 12),
-                          child: Text(content + "：" + amount + (remark != ""?"，$remark":""),
+                          child: Text(
+                              (chatContent["rightcontent"]["typeStr"] ??
+                                  "") +
+                                      "：" +
+                                      chatContent["rightcontent"]["amount"] +
+                                      (chatContent["rightcontent"]["remark"] !=
+                                              ""
+                                          ? "，${chatContent["rightcontent"]["remark"]}"
+                                          : ""),
                               style: TextStyle(
                                   color: MyColors.white_fe,
                                   fontSize: MyFonts.f_14))))),
