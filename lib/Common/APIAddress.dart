@@ -18,6 +18,26 @@ class Address {
     return '$host/users/login';
   }
 
+  //根据用户ID获取聊天室信息
+  static String getChatroom(String id){
+    return '$host/chatroom/$id';
+  }
+
+  //根据聊天室ID获取聊天内容
+  static String getChatContent(String id){
+    return '$host/chatroom/$id/chatContent';
+  }
+
+  //根据聊天室ID增加聊天内容
+  static String saveChatContent(String id){
+    return '$host/chatroom/$id/chatContent';
+  }
+
+  //根据聊天室ID删除聊天内容
+  static String updateChatContent(String id,String chatContentId){
+    return '$host/chatroom/$id/chatContent/$chatContentId';
+  }
+
   //获取社区文章
   static String getActicles(){
     return '$host/communityActicles';

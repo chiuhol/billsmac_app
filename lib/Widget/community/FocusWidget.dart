@@ -100,6 +100,7 @@ class _FocusWidgetState extends State<FocusWidget>
                           color: MyColors.grey_cb,
                           fontSize: MyFonts.f_16)))
                   : ListView.builder(
+                physics: BouncingScrollPhysics(),
                   itemBuilder: searchItemBuilder,
                   itemCount: _articleLst.length,
                   shrinkWrap: true))

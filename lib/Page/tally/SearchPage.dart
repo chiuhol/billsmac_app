@@ -37,7 +37,7 @@ class _SearchPageState extends State<SearchPage> {
                                 color: MyColors.grey_f6),
                             child: Row(children: <Widget>[
                               Icon(IconData(0xe63a, fontFamily: 'MyIcons'),
-                                  size: 24, color: MyColors.orange_67),
+                                  size: 20, color: MyColors.orange_67),
                               SizedBox(width: 8),
                               Container(
                                   width: 100,

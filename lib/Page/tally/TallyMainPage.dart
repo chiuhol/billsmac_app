@@ -1,13 +1,16 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:billsmac_app/Common/CommonInsert.dart';
 import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:billsmac_app/Widget/NumKeyBoard.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:apifm/apifm.dart' as Apifm;
 
 import 'SearchPage.dart';
+import 'TallyDetailPage.dart';
 import 'calendar/CalendarMainPage.dart';
 import 'chatroom/ObjectDetailPage.dart';
 import 'more/MoreMainPage.dart';
@@ -24,6 +27,8 @@ class TallyMainPage extends StatefulWidget {
 class _TallyMainPageState extends State<TallyMainPage>
     with SingleTickerProviderStateMixin {
   String _object = '聊天室名称';
+  String _backgroundUrl =
+      "http://116.62.141.151/uploads/upload_6556666fc92f835b1e0c1715f26cf8e4.png";
   num _mouth = 2;
   double _income = 30.0;
   double _outcome = 40.0;
@@ -49,43 +54,143 @@ class _TallyMainPageState extends State<TallyMainPage>
       RefreshController(initialRefresh: false);
 
   void _onRefresh() async {
-//    _articleLst = [];
-//    _pageIndex = 1;
-  _chatLst = [];
-  _getData();
+    _getChatContent();
     _refreshController.refreshCompleted();
   }
 
   void _onLoading() async {
     _pageIndex += 1;
-//    _getDataLst();
 
     _refreshController.loadComplete();
   }
 
   TabController _tabController;
 
-  List _chatLst = [];
-  @protected
-  _getData(){
-    _chatLst.add({"id":1,"time":"2020-01-28 07:10:10","myCType":"早餐","amount":8.00,"replyContent":"记得按时吃饭哦"});
-    _chatLst.add({"id":2,"time":"2020-01-28 13:10:10","myCType":"中餐","amount":18.00,"replyContent":"记得按时吃饭哦"});
-    _chatLst.add({"id":3,"time":"2020-01-28 18:10:10","myCType":"晚餐","amount":28.00,"replyContent":"记得按时吃饭哦"});
-    _chatLst.add({"id":4,"time":"2020-01-31 07:10:10","myCType":"早餐","amount":8.00,"replyContent":"记得按时吃饭哦"});
-    _chatLst.add({"id":5,"time":"2020-01-31 13:10:10","myCType":"中餐","amount":18.00,"replyContent":"记得按时吃饭哦"});
-    _chatLst.add({"id":6,"time":"2020-01-31 18:10:10","myCType":"晚餐","amount":28.00,"replyContent":"记得按时吃饭哦"});
-  }
+  List _chatContentLst = [];
 
   @protected
-  _checkToken()async{
-    String _token = await LocalStorage.get("Token").then((value){
+  _checkToken() async {
+    String _token = await LocalStorage.get("Token").then((value) {
       return value;
     });
     var res = await Apifm.checkToken(_token);
-    if(res["code"] == 0){
+    if (res["code"] == 0) {
       return;
-    }else{
+    } else {
       CommonUtil.showMyToast("请重新登录");
+    }
+  }
+
+  @protected
+  _getChatroom() async {
+    String _userId = await LocalStorage.get("_id").then((result) {
+      return result;
+    });
+    String _token = await LocalStorage.get("token").then((result) {
+      return result;
+    });
+    try {
+      BaseOptions options = BaseOptions(
+          method: "get",
+          headers: {HttpHeaders.AUTHORIZATION: "Bearer $_token"});
+      var dio = new Dio(options);
+      var response = await dio.get(Address.getChatroom(_userId));
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        var _chatroom = response.data["data"]["chatroom"];
+        if (mounted) {
+          setState(() {
+            LocalStorage.save("chatroomId", _chatroom["_id"]);
+            LocalStorage.save("chatName", _chatroom["chatName"]);
+            LocalStorage.save("background", _chatroom["background"])
+                .toString()
+                .substring(21);
+            _getChatroomMsg();
+            _getChatContent();
+          });
+        }
+      }
+    } catch (err) {
+      CommonUtil.showMyToast(err.toString());
+    }
+  }
+
+  @protected
+  _getChatroomMsg() async {
+    String _chatroomName = await LocalStorage.get("chatName").then((result) {
+      return result;
+    });
+    String _background = await LocalStorage.get("background").then((result) {
+      return result;
+    });
+    if (mounted) {
+      setState(() {
+        _object = _chatroomName;
+        _backgroundUrl = "http://116.62.141.151" + _background;
+      });
+    }
+  }
+
+  @protected
+  _getChatContent() async {
+    String _chatroomId = await LocalStorage.get("chatroomId").then((result) {
+      return result;
+    });
+    String _token = await LocalStorage.get("token").then((result) {
+      return result;
+    });
+    try {
+      BaseOptions options = BaseOptions(
+          method: "get",
+          headers: {HttpHeaders.AUTHORIZATION: "Bearer $_token"});
+      var dio = new Dio(options);
+      var response = await dio.get(Address.getChatContent(_chatroomId));
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        if (mounted) {
+          setState(() {
+            _chatContentLst = response.data["data"]["chatContent"];
+          });
+        }
+      }
+    } catch (err) {
+      CommonUtil.showMyToast(err.toString());
+    }
+  }
+
+  @protected
+  _saveChatContent(String typeStr, String amount) async {
+    String _chatroomId = await LocalStorage.get("chatroomId").then((result) {
+      return result;
+    });
+    String _token = await LocalStorage.get("token").then((result) {
+      return result;
+    });
+    try {
+      BaseOptions options = BaseOptions(
+          method: "post",
+          headers: {HttpHeaders.AUTHORIZATION: "Bearer $_token"});
+      var dio = new Dio(options);
+      var response =
+          await dio.post(Address.saveChatContent(_chatroomId), data: {
+        "chatroomId": _chatroomId,
+        "rightcontent": {
+          "typeStr": typeStr,
+          "amountType": "expend",
+          "amount": amount,
+          "remark": ""
+        }
+      });
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        if (mounted) {
+          setState(() {
+            _chatContentLst.add(response.data["data"]["chatContent"]);
+          });
+        }
+      }
+    } catch (err) {
+      CommonUtil.showMyToast(err.toString());
     }
   }
 
@@ -94,21 +199,13 @@ class _TallyMainPageState extends State<TallyMainPage>
     // TODO: implement initState
     super.initState();
 
-    _checkToken();
-    _getData();
+//    _checkToken();
+    _getChatroom(); //获取聊天室信息
 
     _tabController = TabController(
       length: _categoryLst.length,
       vsync: this,
     );
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-
-//    _tabController.dispose();
   }
 
   @protected
@@ -118,14 +215,10 @@ class _TallyMainPageState extends State<TallyMainPage>
         context: context,
         builder: (BuildContext context) {
           return BottomSheet(_categoryLst, _tabController);
-        }).then((value){
-          if(value != null){
-            if(mounted){
-              setState(() {
-                _chatLst.add({"id":7,"time":DateTime.now().toString(),"myCType":value["type"],"amount":double.parse(value["amount"]),"replyContent":"记得按时吃饭哦"});
-              });
-            }
-          }
+        }).then((value) {
+      if (value != null) {
+        _saveChatContent(value["type"], value["amount"]);
+      }
     });
   }
 
@@ -135,97 +228,18 @@ class _TallyMainPageState extends State<TallyMainPage>
         appBar: PreferredSize(
             child: AppBar(
                 elevation: 0,
-                title: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text(_object,
-                          style: TextStyle(
-                              color: MyColors.black_32,
-                              fontSize: MyFonts.f_18,
-                              fontWeight: FontWeight.bold)),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Text(_mouth.toString() + '月',
-                                style: TextStyle(
-                                    color: MyColors.grey_aa,
-                                    fontSize: MyFonts.f_14)),
-                            SizedBox(width: 5),
-                            Text(
-                                '收' +
-                                    _income.toString() +
-                                    ' / ' +
-                                    '支' +
-                                    _outcome.toString(),
-                                style: TextStyle(
-                                    color: MyColors.grey_aa,
-                                    fontSize: MyFonts.f_14))
-                          ]),
-                      Padding(
-                          padding: EdgeInsets.only(left: 0, right: 0),
-                          child:
-                              Container(height: 1.0, color: MyColors.divider))
-                    ]),
+                title: appBarTitle(),
                 backgroundColor: MyColors.white_fe,
                 centerTitle: true,
-                flexibleSpace: Container(
-                    padding: EdgeInsets.only(top: 90, left: 18, right: 18),
-                    child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          GestureDetector(
-                              behavior: HitTestBehavior.translucent,
-                              onTap: () {
-                                CommonUtil.openPage(context, SearchPage());
-                              },
-                              child: Row(children: <Widget>[
-                                Icon(IconData(0xe63a, fontFamily: 'MyIcons'),
-                                    size: 26, color: MyColors.orange_67),
-                                SizedBox(width: 8),
-                                Text('输入晚餐试试看',
-                                    style: TextStyle(
-                                        color: MyColors.grey_cb,
-                                        fontSize: MyFonts.f_14))
-                              ])),
-                          Row(children: <Widget>[
-                            GestureDetector(
-                                behavior: HitTestBehavior.translucent,
-                                onTap: () {
-                                  CommonUtil.openPage(
-                                      context, CalendarMainPage());
-                                },
-                                child: Icon(
-                                    IconData(0xe685, fontFamily: 'MyIcons'),
-                                    size: 26,
-                                    color: MyColors.orange_67)),
-                            SizedBox(width: 24),
-                            GestureDetector(
-                                behavior: HitTestBehavior.translucent,
-                                onTap: () {
-                                  CommonUtil.openPage(
-                                      context, StatisticsMainPage());
-                                },
-                                child: Icon(
-                                    IconData(0xe64d, fontFamily: 'MyIcons'),
-                                    size: 26,
-                                    color: MyColors.orange_67))
-                          ])
-                        ])),
-                actions: <Widget>[
-                  GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      child: Container(
-                          padding: EdgeInsets.only(right: 10),
-                          child: Icon(IconData(0xe637, fontFamily: 'MyIcons'),
-                              size: 28, color: MyColors.black_32)),
-                      onTap: () {
-                        CommonUtil.openPage(context, MoreMainPage());
-                      })
-                ]),
+                flexibleSpace: flexibleSpaceWidget(),
+                actions: <Widget>[rightEvenWidget()]),
             preferredSize: Size.fromHeight(108)),
         body: Container(
             width: double.infinity,
-            color: MyColors.white_fe,
+            decoration: BoxDecoration(
+                color: MyColors.white_fe,
+                image: DecorationImage(
+                    image: NetworkImage(_backgroundUrl), fit: BoxFit.cover)),
             child: SmartRefresher(
                 controller: _refreshController,
                 onRefresh: _onRefresh,
@@ -247,36 +261,125 @@ class _TallyMainPageState extends State<TallyMainPage>
                   }
                   return Container(height: 55, child: Center(child: body));
                 }),
-                child: ListView.builder(itemBuilder: itemBuilderChat,itemCount: _chatLst.length,shrinkWrap: true,physics: BouncingScrollPhysics()))),
-        bottomSheet: Container(
-            width: double.infinity,
-            height: 45,
-            color: MyColors.orange_67,
-            child: Padding(
-                padding:
-                    EdgeInsets.only(left: 18, right: 18, top: 5, bottom: 5),
-                child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onTap: _tally,
-                    child: Container(
-                        decoration: BoxDecoration(
-                            color: MyColors.white_f6,
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(20))),
-                        child: Padding(
-                            padding: EdgeInsets.only(left: 18, top: 6),
-                            child: Text('点击开始记账',
-                                style: TextStyle(color: MyColors.grey_aa, fontSize: MyFonts.f_14))))))));
+                child: _chatContentLst.length == 0
+                    ? Center(
+                        child: Text("快去记下你的第一笔帐吧~",
+                            style: TextStyle(
+                                color: MyColors.grey_cb,
+                                fontSize: MyFonts.f_16)))
+                    : ListView.builder(
+                        itemBuilder: itemBuilderChat,
+                        itemCount: _chatContentLst.length,
+                        shrinkWrap: true,
+                        physics: BouncingScrollPhysics()))),
+        bottomSheet: bottomSheetWidget());
   }
 
-  Widget itemBuilderChat(BuildContext context, int index){
-    Map _chat = _chatLst[index];
+  Widget appBarTitle() {
     return Column(
-      children: <Widget>[
-        time(_chat["time"]),rightObject(_chat["myCType"],_chat["amount"]),
-        leftObject(_chat["replyContent"])
-      ]
-    );
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(_object,
+              style: TextStyle(
+                  color: MyColors.black_32,
+                  fontSize: MyFonts.f_18,
+                  fontWeight: FontWeight.bold)),
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+            Text(_mouth.toString() + '月',
+                style:
+                    TextStyle(color: MyColors.grey_aa, fontSize: MyFonts.f_14)),
+            SizedBox(width: 5),
+            Text('收' + _income.toString() + ' / ' + '支' + _outcome.toString(),
+                style:
+                    TextStyle(color: MyColors.grey_aa, fontSize: MyFonts.f_14))
+          ]),
+          Padding(
+              padding: EdgeInsets.only(left: 0, right: 0),
+              child: Container(height: 1.0, color: MyColors.divider))
+        ]);
+  }
+
+  Widget flexibleSpaceWidget() {
+    return Container(
+        padding: EdgeInsets.only(top: 90, left: 18, right: 18),
+        child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    CommonUtil.openPage(context, SearchPage());
+                  },
+                  child: Row(children: <Widget>[
+                    Icon(IconData(0xe63a, fontFamily: 'MyIcons'),
+                        size: 20, color: MyColors.orange_67),
+                    SizedBox(width: 8),
+                    Text('输入晚餐试试看',
+                        style: TextStyle(
+                            color: MyColors.grey_cb, fontSize: MyFonts.f_14))
+                  ])),
+              Row(children: <Widget>[
+                GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      CommonUtil.openPage(context, CalendarMainPage());
+                    },
+                    child: Icon(IconData(0xe685, fontFamily: 'MyIcons'),
+                        size: 26, color: MyColors.orange_67)),
+                SizedBox(width: 24),
+                GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      CommonUtil.openPage(context, StatisticsMainPage());
+                    },
+                    child: Icon(IconData(0xe64d, fontFamily: 'MyIcons'),
+                        size: 26, color: MyColors.orange_67))
+              ])
+            ]));
+  }
+
+  Widget rightEvenWidget() {
+    return GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        child: Container(
+            padding: EdgeInsets.only(right: 10),
+            child: Icon(IconData(0xe637, fontFamily: 'MyIcons'),
+                size: 28, color: MyColors.black_32)),
+        onTap: () {
+          CommonUtil.openPage(context, MoreMainPage());
+        });
+  }
+
+  Widget bottomSheetWidget() {
+    return Container(
+        width: double.infinity,
+        height: 45,
+        color: MyColors.orange_67,
+        child: Padding(
+            padding: EdgeInsets.only(left: 18, right: 18, top: 5, bottom: 5),
+            child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: _tally,
+                child: Container(
+                    decoration: BoxDecoration(
+                        color: MyColors.white_f6,
+                        borderRadius: BorderRadius.all(Radius.circular(20))),
+                    child: Padding(
+                        padding: EdgeInsets.only(left: 18, top: 6),
+                        child: Text('点击开始记账',
+                            style: TextStyle(
+                                color: MyColors.grey_aa,
+                                fontSize: MyFonts.f_14)))))));
+  }
+
+  Widget itemBuilderChat(BuildContext context, int index) {
+    Map _chat = _chatContentLst[index];
+    return Column(children: <Widget>[
+      time(_chat["createdAt"]),
+      rightObject(_chat["_id"],_chat["rightcontent"]["typeStr"],
+          _chat["rightcontent"]["amount"], _chat["rightcontent"]["amountType"],_chat["rightcontent"]["remark"],_chat["createdAt"]),
+//      leftObject(_chat["replyContent"])
+    ]);
   }
 
   Widget leftObject(String title) {
@@ -285,59 +388,79 @@ class _TallyMainPageState extends State<TallyMainPage>
         child:
             Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
           GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTap: (){
-              CommonUtil.openPage(context, ObjectDetailPage());
-            },
-            child: ClipOval(
-                child: Image.network(
-                    'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=1908196590,4061628990&fm=11&gp=0.jpg',
-                    width: 45,
-                    height: 45,
-                    fit: BoxFit.cover))
-          ),
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
+                CommonUtil.openPage(context, ObjectDetailPage());
+              },
+              child: ClipOval(
+                  child: Image.network(
+                      'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=1908196590,4061628990&fm=11&gp=0.jpg',
+                      width: 45,
+                      height: 45,
+                      fit: BoxFit.cover))),
           SizedBox(width: 12),
-          Flexible(child: Container(
-              decoration: BoxDecoration(
-                  color: MyColors.grey_f9,
-                  borderRadius: BorderRadius.all(Radius.circular(20))),
-              child: Padding(
-                  padding:
-                  EdgeInsets.only(left: 18, right: 18, top: 12, bottom: 12),
-                  child: Text(title,
-                      style: TextStyle(
-                          color: MyColors.black_62, fontSize: MyFonts.f_14)))))
+          Flexible(
+              child: Container(
+                  decoration: BoxDecoration(
+                      color: MyColors.grey_f9,
+                      borderRadius: BorderRadius.all(Radius.circular(20))),
+                  child: Padding(
+                      padding: EdgeInsets.only(
+                          left: 18, right: 18, top: 12, bottom: 12),
+                      child: Text(title,
+                          style: TextStyle(
+                              color: MyColors.black_62,
+                              fontSize: MyFonts.f_14)))))
         ]));
   }
 
-  Widget rightObject(String content,double amount) {
-    return Container(
-        padding: EdgeInsets.only(right: 12, top: 12),
-        child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
-          Flexible(
-            child: Container(
-                decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [MyColors.orange_b8, MyColors.orange_ab],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                    borderRadius: BorderRadius.all(Radius.circular(20))),
-                child: Padding(
-                    padding:
-                    EdgeInsets.only(left: 18, right: 18, top: 12, bottom: 12),
-                    child: Text(content + "：" + amount.toString(),
-                        style: TextStyle(
-                            color: MyColors.white_fe, fontSize: MyFonts.f_14))))
-          ),
-          SizedBox(width: 12),
-          ClipOval(
-              child: Image.network(
-                  'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=1379686624,47059782&fm=26&gp=0.jpg',
-                  width: 45,
-                  height: 45,
-                  fit: BoxFit.cover))
-        ]));
+  Widget rightObject(String id,String content, String amount,String amountType,String remark, String createAt) {
+    return GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () {
+          CommonUtil.openPage(
+              context,
+              TallyDetailPage(detail: {
+                "id":id,
+                "createAt": createAt,
+                "typeStr": content,
+                "amount": amount,
+                "amountType": amountType,
+                "remark":remark
+              })).then((value){
+                if(value != null && value == "success"){
+                  _getChatContent();
+                }
+          });
+        },
+        child: Container(
+            padding: EdgeInsets.only(right: 12, top: 12),
+            child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <
+                Widget>[
+              Flexible(
+                  child: Container(
+                      decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [MyColors.orange_b8, MyColors.orange_ab],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                          borderRadius: BorderRadius.all(Radius.circular(20))),
+                      child: Padding(
+                          padding: EdgeInsets.only(
+                              left: 18, right: 18, top: 12, bottom: 12),
+                          child: Text(content + "：" + amount + (remark != ""?"，$remark":""),
+                              style: TextStyle(
+                                  color: MyColors.white_fe,
+                                  fontSize: MyFonts.f_14))))),
+              SizedBox(width: 12),
+              ClipOval(
+                  child: Image.network(
+                      'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=1379686624,47059782&fm=26&gp=0.jpg',
+                      width: 45,
+                      height: 45,
+                      fit: BoxFit.cover))
+            ])));
   }
 
   Widget time(String date) {
@@ -472,7 +595,8 @@ class _BottomSheetState extends State<BottomSheet> {
                           CommonUtil.showMyToast("输入金额不能小于0");
                           return;
                         }
-                        Navigator.of(context).pop({"type":_type,"amount":_account});
+                        Navigator.of(context)
+                            .pop({"type": _type, "amount": _account});
                       } else {
                         _account = value;
                       }

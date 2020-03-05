@@ -93,6 +93,7 @@ class _RecommendWidgetState extends State<RecommendWidget>
                                 color: MyColors.grey_cb,
                                 fontSize: MyFonts.f_16)))
                     : ListView.builder(
+                    physics: BouncingScrollPhysics(),
                         itemBuilder: searchItemBuilder,
                         itemCount: _articleLst.length,
                         shrinkWrap: true))));

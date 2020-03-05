@@ -165,6 +165,7 @@ class _TopSearchWidgetState extends State<TopSearchWidget>
 
   Widget topSearchListView() {
     return ListView.builder(
+        physics: BouncingScrollPhysics(),
         itemBuilder: topSearchItemBuilder,
         itemCount: _articleLst.length,
         shrinkWrap: true);
