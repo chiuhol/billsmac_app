@@ -239,6 +239,17 @@ class _SearchMainPageState extends State<SearchMainPage> {
                       _search(value);
                     }
                   },
+                  onChanged: (value){
+                    if(mounted){
+                      setState(() {
+                        if(value == ''){
+                          _isSearch = false;
+                        }else{
+                          _search(value);
+                        }
+                      });
+                    }
+                  },
                   focusNode: _searchFocusNode,
                   autofocus: true,
                   cursorColor: MyColors.orange_68,

@@ -1,4 +1,5 @@
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
 
 import 'SetChatBackgroundPage.dart';
 import 'UpDateChatNamePage.dart';
@@ -14,7 +15,26 @@ class MoreMainPage extends StatefulWidget {
 class _MoreMainPageState extends State<MoreMainPage> {
   String _chatName = "";
 
+  @protected
+  _getChatName()async{
+    String _name = await LocalStorage.get("chatName").then((result) {
+        return result;
+      });
+    if(mounted){
+      setState(() {
+        _chatName = _name;
+      });
+    }
+  }
+
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    _getChatName();
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: MyAppBar(

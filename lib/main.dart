@@ -66,7 +66,6 @@ class _MyAppState extends State<MyApp> {
       debugPrint(
           '-------------------请求成功,请求结果如下:-----------------\n \n===请求求url: ${response.request.uri.toString()} \n \n===请求 ���:   \n${response.headers} \n \n===请求结果: \n${response.data}\n');
       debugPrint('-------------------请求成功,请求结果打印完毕----------------');
-      print(111111111);
       print(response.data["images"][0]["url"]);
       _ImageUrl = "https://cn.bing.com"+response.data["images"][0]["url"];
 //      LocalStorage.save(BaseCommon.ImageUrl, _ImageUrl);

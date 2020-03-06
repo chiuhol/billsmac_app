@@ -23,6 +23,11 @@ class Address {
     return '$host/chatroom/$id';
   }
 
+  //根据用户I修改聊天室信息
+  static String updateChatroom(String id){
+    return '$host/chatroom/$id';
+  }
+
   //根据聊天室ID获取聊天内容
   static String getChatContent(String id){
     return '$host/chatroom/$id/chatContent';

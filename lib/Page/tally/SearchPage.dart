@@ -133,12 +133,14 @@ class _SearchPageState extends State<SearchPage> {
                                       focusNode: _searchFocusNode,
                                       cursorColor: MyColors.orange_68,
                                       onChanged: (value) {
-                                        if (value != '' && value != null) {
-                                          if (mounted) {
-                                            setState(() {
+                                        if (mounted) {
+                                          setState(() {
+                                            if (value != '' && value != null) {
                                               _cleanIcon = true;
-                                            });
-                                          }
+                                            } else {
+                                              _cleanIcon = false;
+                                            }
+                                          });
                                         }
                                       },
                                       onSubmitted: (value) {

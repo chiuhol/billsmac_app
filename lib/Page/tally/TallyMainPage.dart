@@ -26,7 +26,7 @@ class TallyMainPage extends StatefulWidget {
 
 class _TallyMainPageState extends State<TallyMainPage>
     with SingleTickerProviderStateMixin {
-  String _object = '聊天室名称';
+  String _chatroomName = '聊天室名称';
   String _backgroundUrl =
       "http://116.62.141.151/uploads/upload_6556666fc92f835b1e0c1715f26cf8e4.png";
   num _mouth = 2;
@@ -67,6 +67,23 @@ class _TallyMainPageState extends State<TallyMainPage>
   TabController _tabController;
 
   List _chatContentLst = [];
+
+  //从本地储存获取聊天室信息
+  @protected
+  _getLocalStorage()async{
+    String _name = await LocalStorage.get("chatName").then((result) {
+      return result;
+    });
+    String _background = await LocalStorage.get("background").then((result) {
+      return result;
+    });
+    if(mounted){
+      setState(() {
+        _chatroomName = _name;
+        _backgroundUrl = _background;
+      });
+    }
+  }
 
   @protected
   _checkToken() async {
@@ -125,7 +142,7 @@ class _TallyMainPageState extends State<TallyMainPage>
     });
     if (mounted) {
       setState(() {
-        _object = _chatroomName;
+        _chatroomName = _chatroomName;
         _backgroundUrl = "http://116.62.141.151" + _background;
       });
     }
@@ -279,7 +296,7 @@ class _TallyMainPageState extends State<TallyMainPage>
     return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Text(_object,
+          Text(_chatroomName,
               style: TextStyle(
                   color: MyColors.black_32,
                   fontSize: MyFonts.f_18,
@@ -346,7 +363,9 @@ class _TallyMainPageState extends State<TallyMainPage>
             child: Icon(IconData(0xe637, fontFamily: 'MyIcons'),
                 size: 28, color: MyColors.black_32)),
         onTap: () {
-          CommonUtil.openPage(context, MoreMainPage());
+          CommonUtil.openPage(context, MoreMainPage()).then((value){
+            _getLocalStorage();
+          });
         });
   }
 
