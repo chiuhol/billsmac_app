@@ -27,8 +27,7 @@ class TallyMainPage extends StatefulWidget {
 class _TallyMainPageState extends State<TallyMainPage>
     with SingleTickerProviderStateMixin {
   String _chatroomName = '聊天室名称';
-  String _backgroundUrl =
-      "http://116.62.141.151/uploads/upload_6556666fc92f835b1e0c1715f26cf8e4.png";
+  String _backgroundUrl = "";
   num _mouth = 2;
   double _income = 30.0;
   double _outcome = 40.0;
@@ -119,32 +118,15 @@ class _TallyMainPageState extends State<TallyMainPage>
           setState(() {
             LocalStorage.save("chatroomId", _chatroom["_id"]);
             LocalStorage.save("chatName", _chatroom["chatName"]);
-            LocalStorage.save("background", _chatroom["background"])
-                .toString()
-                .substring(21);
-            _getChatroomMsg();
+            _chatroomName = _chatroom["chatName"];
+            _backgroundUrl = _chatroom["background"];
+            LocalStorage.save("background", _chatroom["background"]);
             _getChatContent();
           });
         }
       }
     } catch (err) {
       CommonUtil.showMyToast(err.toString());
-    }
-  }
-
-  @protected
-  _getChatroomMsg() async {
-    String _chatroomName = await LocalStorage.get("chatName").then((result) {
-      return result;
-    });
-    String _background = await LocalStorage.get("background").then((result) {
-      return result;
-    });
-    if (mounted) {
-      setState(() {
-        _chatroomName = _chatroomName;
-        _backgroundUrl = "http://116.62.141.151" + _background;
-      });
     }
   }
 

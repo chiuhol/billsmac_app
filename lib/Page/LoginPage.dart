@@ -60,6 +60,7 @@ class _LoginPageState extends State<LoginPage>
           LocalStorage.save("_id", _user["_id"]);
           LocalStorage.save("identity", _user["identity"]);
           LocalStorage.save("birth", _user["birth"]);
+          LocalStorage.save("locations", _user["locations"]);
           LocalStorage.save(
               "avatar_url", _user["avatar_url"].toString().substring(21));
           LocalStorage.save("remindTime", _user["remindTime"]);

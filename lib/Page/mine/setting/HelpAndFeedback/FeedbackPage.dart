@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
+import 'package:dio/dio.dart';
 
 import 'FeedbackHistoryPage.dart';
 
@@ -13,21 +17,51 @@ class FeedbackPage extends StatefulWidget {
 class _FeedbackPageState extends State<FeedbackPage> {
   TextEditingController _inputController = TextEditingController();
   TextEditingController _phoneController = TextEditingController();
-  String _type = '';
+  String _feedbackType = '';
 
   @protected
-  _submit(){
-    if(_type == ''){
+  _submit() {
+    if (_feedbackType == '') {
       CommonUtil.showMyToast('请选择反馈类型');
       return;
     }
-    if(_inputController.text == ''){
+    if (_inputController.text == '') {
       CommonUtil.showMyToast('请输入反馈内容');
       return;
     }
-    if(_phoneController.text == ''){
+    if (_phoneController.text == '') {
       CommonUtil.showMyToast('请输入手机号或qq号');
       return;
+    }
+    _saveFeedback();
+  }
+
+  @protected
+  _saveFeedback() async {
+    String _userId = await LocalStorage.get("_id").then((result) {
+      return result;
+    });
+    String _token = await LocalStorage.get("token").then((result) {
+      return result;
+    });
+    try {
+      BaseOptions options = BaseOptions(
+          method: "post",
+          headers: {HttpHeaders.AUTHORIZATION: "Bearer $_token"});
+      var dio = new Dio(options);
+      var response = await dio.post(Address.saveFeedback(_userId), data: {
+        "userId": _userId,
+        "type": _feedbackType,
+        "content": _inputController.text,
+        "contactWay": _phoneController.text
+      });
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        CommonUtil.showMyToast("您的反馈已提交");
+        Navigator.of(context).pop("success");
+      }
+    } catch (err) {
+      CommonUtil.showMyToast(err.toString());
     }
   }
 
@@ -48,23 +82,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
                         color: MyColors.black_32, fontSize: MyFonts.f_14))),
             backIcon: Icon(Icons.keyboard_arrow_left,
                 color: MyColors.black_32, size: 28)),
-        bottomSheet: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: _submit,
-          child: Container(
-              width: double.infinity,
-              height: 45,
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [MyColors.orange_76, MyColors.orange_62],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  )),
-              child: Center(
-                  child: Text('提交',
-                      style: TextStyle(
-                          color: MyColors.white_fe, fontSize: MyFonts.f_16))))
-        ),
         body: Container(
             color: MyColors.grey_f6,
             width: double.infinity,
@@ -80,7 +97,27 @@ class _FeedbackPageState extends State<FeedbackPage> {
                       builder('反馈内容'),
                       contentWidget(),
                       builder('联系方式'),
-                      phoneWidget()
+                      phoneWidget(),
+                      Padding(
+                        padding: EdgeInsets.only(top: 30),
+                        child: GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            onTap: _submit,
+                            child: Container(
+                                width: double.infinity,
+                                height: 45,
+                                decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [MyColors.orange_76, MyColors.orange_62],
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                    )),
+                                child: Center(
+                                    child: Text('提交',
+                                        style: TextStyle(
+                                            color: MyColors.white_fe,
+                                            fontSize: MyFonts.f_16)))))
+                      )
                     ]))));
   }
 
@@ -159,6 +196,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 item["isSelected"] = false;
               });
               _type["isSelected"] = true;
+              _feedbackType = _type["type"];
             });
           }
         },

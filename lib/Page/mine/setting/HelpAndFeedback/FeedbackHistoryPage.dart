@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
@@ -19,8 +23,7 @@ class _FeedbackHistoryPageState extends State<FeedbackHistoryPage> {
   RefreshController(initialRefresh: false);
 
   void _onRefresh() async {
-    _historyLst = [];
-    _getLst();
+    _getFeedback();
       _refreshController.refreshCompleted();
   }
 
@@ -31,8 +34,30 @@ class _FeedbackHistoryPageState extends State<FeedbackHistoryPage> {
   }
 
   @protected
-  _getLst(){
-    _historyLst.add({"type": "其他", "content": "没什么好说的", "time": "2020-02-24"});
+  _getFeedback() async {
+    String _userId = await LocalStorage.get("_id").then((result) {
+      return result;
+    });
+    String _token = await LocalStorage.get("token").then((result) {
+      return result;
+    });
+    try {
+      BaseOptions options = BaseOptions(
+          method: "get",
+          headers: {HttpHeaders.AUTHORIZATION: "Bearer $_token"});
+      var dio = new Dio(options);
+      var response = await dio.get(Address.getFeedback(_userId));
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        if(mounted){
+          setState(() {
+            _historyLst = response.data["data"]["feedback"];
+          });
+        }
+      }
+    } catch (err) {
+      CommonUtil.showMyToast(err.toString());
+    }
   }
 
   @override
@@ -40,7 +65,7 @@ class _FeedbackHistoryPageState extends State<FeedbackHistoryPage> {
     // TODO: implement initState
     super.initState();
 
-    _getLst();
+    _getFeedback();
   }
 
   @override
@@ -103,7 +128,7 @@ class _FeedbackHistoryPageState extends State<FeedbackHistoryPage> {
                     Text(_history["type"] ?? "",
                         style: TextStyle(
                             color: MyColors.black_32, fontSize: MyFonts.f_15)),
-                    Text(_history["time"] ?? "",
+                    Text(_history["createdAt"].toString().substring(0,10) ?? "",
                         style: TextStyle(
                             color: MyColors.black_32, fontSize: MyFonts.f_12))
                   ]),
@@ -112,7 +137,7 @@ class _FeedbackHistoryPageState extends State<FeedbackHistoryPage> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                      color: MyColors.black_32, fontSize: MyFonts.f_15))
+                      color: MyColors.grey_cb, fontSize: MyFonts.f_15))
             ]));
   }
 }

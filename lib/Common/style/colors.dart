@@ -101,6 +101,8 @@ class MyColors {
   static const Color orange_67 = Color(0xFFEDAB67);
   static const Color orange_81 = Color(0xFFF9DC81);
   static const Color orange_68 = Color(0xFFF6C868);
+  static const Color orange_ac = Color(0xFFF1CEAC);
+  static const Color orange_b6 = Color(0xFFF4E0B6);
 
   static const Color blue_3f = Color(0x80001F3F);
   static const Color blue_4f = Color(0xFF4CA4FF);

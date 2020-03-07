@@ -1,11 +1,13 @@
+import 'dart:io';
+
 import 'package:billsmac_app/Common/CommonInsert.dart';
 import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:billsmac_app/Widget/photo_crop.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:city_pickers/city_pickers.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:billsmac_app/Common/DataBase/SqliteHelper.dart';
 
 ///Author:chiuhol
 ///2020-2-6
@@ -16,7 +18,7 @@ class PersonalInfoPage extends StatefulWidget {
 }
 
 class _PersonalInfoPageState extends State<PersonalInfoPage> {
-  String _nikeName = '来做客';
+  String _nikeName = '请输入你的昵称';
   String _avatar = "";
   String _sex = "男";
   String _identity = "选择我的身份";
@@ -37,25 +39,46 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
 
   TextEditingController _nameController = TextEditingController();
 
-  final sqlHelp = SqliteHelper();
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-
-    _getPersonalMsg();
+  @protected
+  _savePersonalMsg(Map msg)async{
+    String _userId = await LocalStorage.get("_id").then((result) {
+      return result;
+    });
+    String _token = await LocalStorage.get("token").then((result) {
+      return result;
+    });
+    try {
+      BaseOptions options = BaseOptions(
+          method: "patch",
+          headers: {HttpHeaders.AUTHORIZATION: "Bearer $_token"});
+      var dio = new Dio(options);
+      var response = await dio.patch(
+          Address.updatePersonalMsg(_userId),
+          data: msg);
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        LocalStorage.save("nikeName", msg["nikeName"]);
+        LocalStorage.save("gender", msg["gender"]);
+        LocalStorage.save("identity", msg["identity"]);
+        LocalStorage.save("birth", msg["birth"]);
+        LocalStorage.save("locations", msg["locations"]);
+        CommonUtil.showMyToast("你的资料已修改");
+        Navigator.of(context).pop("success");
+      }
+    } catch (err) {
+      CommonUtil.showMyToast(err.toString());
+    }
   }
 
   @protected
   _getPersonalMsg()async{
-    _nikeName = await LocalStorage.get("nikeName").then((result) {
+    String _name = await LocalStorage.get("nikeName").then((result) {
       return result;
     });
-    _avatar = await LocalStorage.get("avatar_url").then((result) {
+    String _avatarUrl = await LocalStorage.get("avatar_url").then((result) {
       return result;
     });
-    _sex = await LocalStorage.get("gender").then((result) {
+    String _gender = await LocalStorage.get("gender").then((result) {
       if(result == 'male'){
         result = "男";
       }else if(result == 'female'){
@@ -65,7 +88,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
       }
       return result;
     });
-    _identity = await LocalStorage.get("identity").then((result) {
+    String _userIdentity = await LocalStorage.get("identity").then((result) {
       if(result == 'student'){
         result = "学生";
       }else if(result == 'office'){
@@ -75,9 +98,31 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
       }
       return result;
     });
-    _birthday = await LocalStorage.get("birth").then((result) {
+    String _userLocation = await LocalStorage.get("locations").then((result) {
       return result;
     });
+    String _userBirth = await LocalStorage.get("birth").then((result) {
+      return result;
+    });
+    if(mounted){
+      setState(() {
+        _nameController.text = _name;
+        _nikeName = _name;
+        _avatar = _avatarUrl;
+        _sex = _gender;
+        _identity = _userIdentity;
+        _location = _userLocation;
+        _birthday = _userBirth;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    _getPersonalMsg();
   }
 
   @protected
@@ -95,7 +140,6 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
           _day = (_day.length == 1) ? ('0' + _day) : _day;
 
           _birthday = _year + '-' + _month + '-' + _day;
-//              _updateBirthDayToDB();
         });
       }
     });
@@ -326,24 +370,28 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
         backTitle: "取消",
         rightEvent: GestureDetector(
             behavior: HitTestBehavior.translucent,
-            onTap: () async{
-
-              await sqlHelp.open();
-
-//              sqlHelp.insert({"userId":3,"name":_nameController.text});
-//              sqlHelp.delete(3);
-
-              sqlHelp.insert({
-                "userId":1
+            onTap: () {
+              if(_identity == '学生'){
+                _identity = "student";
+              }else if(_identity == '上班族'){
+                _identity = "office";
+              }else{
+                _identity = "other";
+              }
+              if(_sex == '男'){
+                _sex = "male";
+              }else if(_sex == '女'){
+                _sex = "female";
+              }else{
+                _sex = "secrecy";
+              }
+              _savePersonalMsg({
+                "nikeName":_nameController.text,
+                "gender":_sex,
+                "identity":_identity,
+                "birth":_birthday,
+                "locations":_location
               });
-              List l = await sqlHelp.queryAll();
-              print(l);
-
-//              await sqlHelp.close();
-            
-            
-//            LocalStorage.save(BaseCommon.USER_NAME, 1);
-//            print(LocalStorage.get(BaseCommon.USER_NAME));
             },
             child: Text("保存",
                 style: TextStyle(
@@ -360,15 +408,15 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                 SizedBox(height: 2),
                 builder("头像", "116.62.141.151"+_avatar, _updateAvatar),
                 SeparatorWidget(),
-                builder("昵称", _nikeName, () {}),
+                builder("昵称", _nikeName??"", () {}),
                 SizedBox(height: 12),
-                builder("性别", _sex, _updateGender),
+                builder("性别", _sex??"", _updateGender),
                 SeparatorWidget(),
-                builder("身份", _identity, _updateIdentity),
+                builder("身份", _identity??"", _updateIdentity),
                 SeparatorWidget(),
-                builder("所在地", _location, _updateCity),
+                builder("所在地", _location??"", _updateCity),
                 SeparatorWidget(),
-                builder("生日", _birthday, _updateBirthDay)
+                builder("生日", _birthday??"", _updateBirthDay)
               ]))),
     );
   }
@@ -403,6 +451,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                                 LengthLimitingTextInputFormatter(7) //限制长度
                               ],
                               cursorColor: MyColors.orange_68,
+                              textDirection: TextDirection.rtl,
                               decoration: InputDecoration(
                                 hintText: _nikeName,
                                 hintStyle: TextStyle(

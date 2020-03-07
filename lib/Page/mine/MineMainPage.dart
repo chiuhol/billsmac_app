@@ -21,19 +21,36 @@ class MineMainPage extends StatefulWidget {
 }
 
 class _MineMainPageState extends State<MineMainPage> {
-  String _nikeName = '来做客';
+  String _nikeName = '';
   int _day = 7;
   String _assistantName = '梁佩诗';
   String _avatar = "";
 
+  String _remindTime = "";
+  String _remindPeriod = "";
+
   @protected
   _getPersonalMsg()async{
-    _nikeName = await LocalStorage.get("nikeName").then((result) {
+    String _name = await LocalStorage.get("nikeName").then((result) {
       return result;
     });
-    _avatar = await LocalStorage.get("avatar_url").then((result) {
+    String _avatarUrl = await LocalStorage.get("avatar_url").then((result) {
       return result;
     });
+    String _time = await LocalStorage.get("remindTime").then((result) {
+      return result;
+    });
+    String _period = await LocalStorage.get("remindPeriod").then((result) {
+      return result;
+    });
+    if(mounted){
+      setState(() {
+        _nikeName = _name;
+        _avatar = _avatarUrl;
+        _remindTime = _time;
+        _remindPeriod = _period;
+      });
+    }
   }
 
   @override
@@ -41,11 +58,7 @@ class _MineMainPageState extends State<MineMainPage> {
     // TODO: implement initState
     super.initState();
 
-    if(mounted){
-      setState(() {
-        _getPersonalMsg();
-      });
-    }
+    _getPersonalMsg();
   }
 
 
@@ -146,8 +159,14 @@ class _MineMainPageState extends State<MineMainPage> {
                             SubprojectWidget(
                                 title: '记账提醒',
                                 icon: 0xe62e,
-                                subTitle: '19：30每天',
-                                rout: RemindPage()),
+                                subTitle: _remindTime+_remindPeriod,
+                                function: (){
+                                  CommonUtil.openPage(context, RemindPage()).then((value){
+                                    if(value == "success"){
+                                      _getPersonalMsg();
+                                    }
+                                  });
+                                }),
                             SeparatorWidget(),
                             SubprojectWidget(
                                 title: '设置',

@@ -1,6 +1,6 @@
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:gesture_password/gesture_password.dart';
-import 'package:gesture_password/mini_gesture_password.dart';
 
 ///Author:chiuhol
 ///2020-2-8
@@ -103,6 +103,7 @@ class _SetGesturePasswordPageState extends State<SetGesturePasswordPage> {
                             _tips = "与上一次绘制不一致，请重新绘制";
                           } else {
                             _tips = "手势密码绘制成功";
+                            LocalStorage.save("gesturePassword", _secondOPass);
                             CommonUtil.closePage(context);
                           }
                         }

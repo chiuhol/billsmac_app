@@ -168,13 +168,14 @@ class _SetChatBackgroundPageState extends State<SetChatBackgroundPage> {
         },
         child: Container(
             decoration: BoxDecoration(
+              color: MyColors.white_fe,
                 borderRadius: BorderRadius.all(Radius.circular(10.0)),
                 border: Border.all(
                     color: _photo["isSelect"] == true
                         ? MyColors.orange_68
                         : MyColors.white_fe,
                     width: 5),
-                image: DecorationImage(
+                image: _photo["url"] == ""?null:DecorationImage(
                     image: NetworkImage("https://cn.bing.com${_photo["url"]}"),
                     fit: BoxFit.fill))));
   }

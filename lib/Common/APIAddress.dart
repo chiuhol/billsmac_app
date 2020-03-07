@@ -18,6 +18,21 @@ class Address {
     return '$host/users/login';
   }
 
+  //修改用户资料
+  static String updatePersonalMsg(String userId){
+    return '$host/users/$userId';
+  }
+
+  //修改用户密码
+  static String updatePwd(String userId){
+    return '$host/users/updatePwd/$userId';
+  }
+
+  //注销用户
+  static String deleteUser(String userId){
+    return '$host/users/$userId';
+  }
+
   //根据用户ID获取聊天室信息
   static String getChatroom(String id){
     return '$host/chatroom/$id';
@@ -71,6 +86,16 @@ class Address {
   //根据ID修改社区文章某个评论
   static String updateCommentById(String articleId,String commentId){
     return '$host/communityActicles/$articleId/comments/$commentId';
+  }
+
+  //新建反馈
+  static String saveFeedback(String userId){
+    return '$host/feedback/$userId';
+  }
+
+  //查看反馈历史
+  static String getFeedback(String userId){
+    return '$host/feedback/$userId';
   }
 
 }

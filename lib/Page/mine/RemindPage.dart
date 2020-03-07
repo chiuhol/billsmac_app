@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_cupertino_date_picker/flutter_cupertino_date_picker.dart';
 
 ///Author:chiuhol
@@ -10,8 +14,8 @@ class RemindPage extends StatefulWidget {
 }
 
 class _RemindPageState extends State<RemindPage> {
-  String _remindTime = "19:30";
-  String _remindPeriod = "每天";
+  String _remindTime = "";
+  String _remindPeriod = "";
 
   bool switchValue = false;
 
@@ -110,12 +114,83 @@ class _RemindPageState extends State<RemindPage> {
         });
   }
 
+  @protected
+  _savePersonalMsg() async {
+    String _userId = await LocalStorage.get("_id").then((result) {
+      return result;
+    });
+    String _token = await LocalStorage.get("token").then((result) {
+      return result;
+    });
+    try {
+      BaseOptions options = BaseOptions(
+          method: "patch",
+          headers: {HttpHeaders.AUTHORIZATION: "Bearer $_token"});
+      var dio = new Dio(options);
+      var response = await dio.patch(Address.updatePersonalMsg(_userId),
+          data: {"remindTime": _remindTime});
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        LocalStorage.save("remindTime", _remindTime);
+        Navigator.of(context).pop("success");
+      }
+    } catch (err) {
+      CommonUtil.showMyToast(err.toString());
+    }
+  }
+
+  @protected
+  _getPersonalMsg() async {
+    String _time = await LocalStorage.get("remindTime").then((result) {
+      return result;
+    });
+    bool _isRemind = await LocalStorage.getBool("isRemind").then((result) {
+      return result;
+    });
+    print(_isRemind);
+    String _period = await LocalStorage.get("remindPeriod").then((result) {
+      return result;
+    });
+    if (mounted) {
+      setState(() {
+        _remindTime = _time;
+        switchValue = _isRemind ?? false;
+        _remindPeriod = _period;
+        List _a =
+            _remindPeriod.replaceAll("周", "").replaceAll("，", "").split(",");
+        _periodLst.forEach((items) {
+          for (int i = 0; i < _a.length; i++) {
+            if (items["name"].toString().contains(_a[i])) {
+              items["isSelected"] = true;
+            }
+          }
+        });
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    _getPersonalMsg();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: MyAppBar(
           title: "记账提醒",
           isBack: true,
+          backEvent: () {
+            if (switchValue) {
+              LocalStorage.save("isRemind", switchValue);
+              LocalStorage.save("remindTime", _remindTime);
+              LocalStorage.save("remindPeriod", _remindPeriod);
+              _savePersonalMsg();
+            }
+          },
           backIcon: Icon(Icons.keyboard_arrow_left,
               color: MyColors.black_32, size: 28),
           color: MyColors.white_fe,
@@ -149,9 +224,9 @@ class _RemindPageState extends State<RemindPage> {
                                 })
                           ])),
                   SeparatorWidget(),
-                  builder("提醒时间", _remindTime, _setRemindTime),
+                  builder("提醒时间", _remindTime ?? "19:30", _setRemindTime),
                   SeparatorWidget(),
-                  builder("重复周期", _remindPeriod, _setPeriodTime)
+                  builder("重复周期", _remindPeriod ?? "每天", _setPeriodTime)
                 ]))));
   }
 

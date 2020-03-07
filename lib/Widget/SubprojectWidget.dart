@@ -7,8 +7,9 @@ class SubprojectWidget extends StatelessWidget {
   final Widget rout;
   final String title, subTitle;
   final Color iconColor;
+  final Function function;
 
-  SubprojectWidget({this.icon, this.rout, this.title, this.subTitle, this.iconColor = MyColors.orange_81});
+  SubprojectWidget({this.icon, this.rout, this.title, this.subTitle, this.iconColor = MyColors.orange_81,this.function});
 
   final TelAndSmsService _service = locator<TelAndSmsService>();
   @override
@@ -16,7 +17,7 @@ class SubprojectWidget extends StatelessWidget {
 
     return GestureDetector(
         behavior: HitTestBehavior.translucent,
-        onTap: () {
+        onTap: function != null?function:() {
           if(title == "联系我们"){
             _service.call(subTitle);
             return;
