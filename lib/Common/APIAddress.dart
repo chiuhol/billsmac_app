@@ -98,4 +98,14 @@ class Address {
     return '$host/feedback/$userId';
   }
 
+  //获取用户的对象列表
+  static String getObjects(String userId){
+    return '$host/users/$userId/objects/$userId';
+  }
+
+  //增加用户对象
+  static String saveObjects(String userId){
+    return '$host/users/$userId/objects';
+  }
+
 }

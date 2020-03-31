@@ -7,6 +7,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../LoginPage.dart';
+import 'CheckIDPage.dart';
 import 'UpdatePasswordPage.dart';
 
 ///Author:chiuhol
@@ -72,6 +73,26 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             ]));
   }
 
+  @protected
+  _getLocalStorage()async{
+    String _account = await LocalStorage.get("phone").then((result) {
+      return result;
+    });
+    if(mounted){
+      setState(() {
+        _phone = _account;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    _getLocalStorage();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,7 +115,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                       title: '手机号',
                       icon: 0xe671,
                       iconColor: MyColors.grey_e4,
-                      subTitle: _phone),
+                      subTitle: _phone,rout: CheckIDPage(phone: _phone)),
                   SeparatorWidget(),
                   SubprojectWidget(
                       title: '修改密码', icon: 0xe626, iconColor: MyColors.grey_e4,rout: UpdatePasswordPage()),

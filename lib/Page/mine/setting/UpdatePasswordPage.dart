@@ -62,17 +62,22 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
             backIcon: Icon(Icons.keyboard_arrow_left,
                 color: MyColors.black_32, size: 28),
             color: MyColors.white_fe),
-        body: SingleChildScrollView(
-            physics:
-                BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-            child: Column(children: <Widget>[
-              textWidget(_oldPwdController, "请输入原密码"),
-              SeparatorWidget(),
-              textWidget(_newPwdController, "请设置新密码"),
-              SeparatorWidget(),
-              textWidget(_new2PwdController, "请再次输入新密码"),
-              submit()
-            ])));
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          color: MyColors.grey_f6,
+          child: SingleChildScrollView(
+              physics:
+              BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+              child: Column(children: <Widget>[
+                textWidget(_oldPwdController, "请输入原密码"),
+                SeparatorWidget(),
+                textWidget(_newPwdController, "请设置新密码"),
+                SeparatorWidget(),
+                textWidget(_new2PwdController, "请再次输入新密码"),
+                submit()
+              ]))
+        ));
   }
 
   Widget submit() {
@@ -153,6 +158,7 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
               onTap: () {
                 if (mounted) {
                   setState(() {
+                    _submitStatus = false;
                     controller.clear();
                   });
                 }

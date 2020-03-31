@@ -156,6 +156,14 @@ class CommonUtil {
     }
   }
 
+  //比较两个时间返回相差天数
+  static int getDuration(String comTime) {
+    var nowTime = DateTime.now();
+    var compareTime = DateTime.parse(comTime);
+    var difference = nowTime.difference(compareTime);
+    return difference.inDays;
+  }
+
   //金额格式化
   static String formatNum(num) {
     var point = 2;
