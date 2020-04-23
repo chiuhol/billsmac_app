@@ -18,6 +18,11 @@ class Address {
     return '$host/users/login';
   }
 
+  //获取用户列表
+  static String getUsers(){
+    return '$host/users';
+  }
+
   //修改用户资料
   static String updatePersonalMsg(String userId){
     return '$host/users/$userId';

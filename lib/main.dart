@@ -16,6 +16,8 @@ import 'Page/LoginPage.dart';
 import 'package:apifm/apifm.dart' as Apifm;
 import 'package:device_info/device_info.dart';
 
+import 'Page/ManagerMainPage.dart';
+
 ///@Author:chiuhol
 ///2019-12-4
 
@@ -136,4 +138,5 @@ Map<String, WidgetBuilder> routes = {
   HomeMainPage.HOMEMAINPAGE: (context) => HomeMainPage(),
   MineMainPage.MINEMAINPAGE: (context) => MineMainPage(),
   LoginPage.LOGINPAGE: (context) => LoginPage(),
+  ManagerMainPage.MANAGERMAINPAGE: (context) => ManagerMainPage(),
 };

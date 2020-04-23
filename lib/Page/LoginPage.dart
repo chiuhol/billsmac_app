@@ -55,24 +55,29 @@ class _LoginPageState extends State<LoginPage>
         if (jsonDecode(res.body)["status"] == 200) {
           LocalStorage.save("token", jsonDecode(res.body)["data"]["token"]);
           var _user = jsonDecode(res.body)["data"]["user"];
-          LocalStorage.save("nikeName", _user["nikeName"]);
-          LocalStorage.save("gender", _user["gender"]);
-          LocalStorage.save("_id", _user["_id"]);
-          LocalStorage.save("identity", _user["identity"]);
-          LocalStorage.save("birth", _user["birth"]);
-          LocalStorage.save("locations", _user["locations"]);
-          LocalStorage.save(
-              "avatar_url", _user["avatar_url"].toString().substring(21));
-          LocalStorage.save("remindTime", _user["remindTime"]);
-          LocalStorage.save("phone", _user["phone"]);
-          Navigator.pushReplacementNamed(context, '/HomeMain_Page');
+          LocalStorage.save("nikeName", _user["nikeName"]??"");
+          LocalStorage.save("gender", _user["gender"]??"");
+          LocalStorage.save("_id", _user["_id"]??"");
+          LocalStorage.save("identity", _user["identity"]??"");
+          LocalStorage.save("birth", _user["birth"]??"");
+          LocalStorage.save("locations", _user["locations"]??"");
+          if(_user["avatar_url"] != null && _user["avatar_url"] != ''){
+            LocalStorage.save(
+                "avatar_url", _user["avatar_url"].toString().substring(21));
+          }
+          LocalStorage.save("remindTime", _user["remindTime"]??"");
+          LocalStorage.save("phone", _user["phone"]??"");
+          if(_user["isManager"]){
+            Navigator.pushReplacementNamed(context, '/ManagerMain_Page');
+          }else{
+            Navigator.pushReplacementNamed(context, '/HomeMain_Page');
+          }
         } else {
           print(jsonDecode(res.body)["message"]);
           CommonUtil.showMyToast(jsonDecode(res.body)["message"]);
         }
       } catch (err) {
-        print(err);
-        CommonUtil.showMyToast(err);
+        CommonUtil.showMyToast("系统开小差了~");
       }
     }
   }
@@ -278,11 +283,23 @@ class _LoginPageState extends State<LoginPage>
                             child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: <Widget>[
-                                  Icon(IconData(0xe6ea, fontFamily: 'MyIcons'),
-                                      size: 30, color: MyColors.white_fe),
+                                  GestureDetector(
+                                    behavior: HitTestBehavior.translucent,
+                                    onTap: (){
+                                      CommonUtil.showMyToast("功能暂未开放~");
+                                    },
+                                    child: Icon(IconData(0xe6ea, fontFamily: 'MyIcons'),
+                                        size: 30, color: MyColors.white_fe)
+                                  ),
                                   SizedBox(width: 50),
-                                  Icon(IconData(0xe50b, fontFamily: 'MyIcons'),
-                                      size: 30, color: MyColors.white_fe)
+                                  GestureDetector(
+                                    behavior: HitTestBehavior.translucent,
+                                    onTap: (){
+                                      CommonUtil.showMyToast("功能暂未开放~");
+                                    },
+                                    child: Icon(IconData(0xe50b, fontFamily: 'MyIcons'),
+                                        size: 30, color: MyColors.white_fe)
+                                  )
                                 ]))
                       ])),
                   new Container(

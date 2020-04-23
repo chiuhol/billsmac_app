@@ -27,6 +27,10 @@ class _setPwdPageState extends State<setPwdPage> {
       CommonUtil.showMyToast("请输入密码");
       return;
     }
+    if(_pwdController.text.length > 12 || _pwdController.text.length < 6){
+      CommonUtil.showMyToast("密码长度规定为6-12位");
+      return;
+    }
     if (_pwdController.text != _againPwdController.text) {
       CommonUtil.showMyToast("两次密码输入不一致");
       return;
