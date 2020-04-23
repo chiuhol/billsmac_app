@@ -23,6 +23,21 @@ class Address {
     return '$host/users';
   }
 
+  //获取管理员列表
+  static String getManagers(){
+    return '$host/managers';
+  }
+
+  //修改管理员信息
+  static String updateManagers(String managerId){
+    return '$host/managers/$managerId';
+  }
+
+  //管理员登录
+  static String managerLogin(){
+    return '$host/managers/login';
+  }
+
   //修改用户资料
   static String updatePersonalMsg(String userId){
     return '$host/users/$userId';
@@ -96,6 +111,11 @@ class Address {
   //新建反馈
   static String saveFeedback(String userId){
     return '$host/feedback/$userId';
+  }
+
+  //获取所有反馈
+  static String getAllFeedback(){
+    return '$host/feedback';
   }
 
   //查看反馈历史

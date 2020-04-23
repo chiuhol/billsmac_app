@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:billsmac_app/Common/CommonInsert.dart';
 import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:billsmac_app/Page/RegisterPage.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/gestures.dart';
 import 'package:http/http.dart' as http;
 
@@ -26,6 +27,8 @@ class _LoginPageState extends State<LoginPage>
   String password;
   bool isShowPassWord = false;
 
+  bool _identity = false;
+
   TextEditingController _phoneController = TextEditingController();
 
   void login() async {
@@ -35,7 +38,7 @@ class _LoginPageState extends State<LoginPage>
     if (loginForm.validate()) {
       loginForm.save();
       if (userName == '') {
-        CommonUtil.showMyToast("请输入手机号");
+        CommonUtil.showMyToast("请输入账号");
         return;
       }
       if (password == '') {
@@ -48,37 +51,57 @@ class _LoginPageState extends State<LoginPage>
 //      String _deviceName = await LocalStorage.get("DeviceName").then((result) {
 //        return result;
 //      });
-      try {
-        http.Response res = await http.post(Address.login(),
-            body: {"phone": userName, "password": password});
-        print(jsonDecode(res.body));
-        if (jsonDecode(res.body)["status"] == 200) {
-          LocalStorage.save("token", jsonDecode(res.body)["data"]["token"]);
-          var _user = jsonDecode(res.body)["data"]["user"];
-          LocalStorage.save("nikeName", _user["nikeName"]??"");
-          LocalStorage.save("gender", _user["gender"]??"");
-          LocalStorage.save("_id", _user["_id"]??"");
-          LocalStorage.save("identity", _user["identity"]??"");
-          LocalStorage.save("birth", _user["birth"]??"");
-          LocalStorage.save("locations", _user["locations"]??"");
-          if(_user["avatar_url"] != null && _user["avatar_url"] != ''){
-            LocalStorage.save(
-                "avatar_url", _user["avatar_url"].toString().substring(21));
-          }
-          LocalStorage.save("remindTime", _user["remindTime"]??"");
-          LocalStorage.save("phone", _user["phone"]??"");
-          if(_user["isManager"]){
-            Navigator.pushReplacementNamed(context, '/ManagerMain_Page');
-          }else{
+      if(!_identity){
+        try {
+          http.Response res = await http.post(Address.login(),
+              body: {"phone": userName, "password": password});
+          print(jsonDecode(res.body));
+          if (jsonDecode(res.body)["status"] == 200) {
+            LocalStorage.save("token", jsonDecode(res.body)["data"]["token"]);
+            var _user = jsonDecode(res.body)["data"]["user"];
+            LocalStorage.save("nikeName", _user["nikeName"]??"");
+            LocalStorage.save("gender", _user["gender"]??"");
+            LocalStorage.save("_id", _user["_id"]??"");
+            LocalStorage.save("identity", _user["identity"]??"");
+            LocalStorage.save("birth", _user["birth"]??"");
+            LocalStorage.save("locations", _user["locations"]??"");
+            if(_user["avatar_url"] != null && _user["avatar_url"] != ''){
+              LocalStorage.save(
+                  "avatar_url", _user["avatar_url"].toString().substring(21));
+            }
+            LocalStorage.save("remindTime", _user["remindTime"]??"");
+            LocalStorage.save("phone", _user["phone"]??"");
             Navigator.pushReplacementNamed(context, '/HomeMain_Page');
+          } else {
+            print(jsonDecode(res.body)["message"]);
+            CommonUtil.showMyToast(jsonDecode(res.body)["message"]);
           }
-        } else {
-          print(jsonDecode(res.body)["message"]);
-          CommonUtil.showMyToast(jsonDecode(res.body)["message"]);
+        } catch (err) {
+          CommonUtil.showMyToast("系统开小差了~");
         }
-      } catch (err) {
-        CommonUtil.showMyToast("系统开小差了~");
-      }
+      }else
+        {
+          try {
+            BaseOptions options = BaseOptions(
+                method: "post");
+            var dio = new Dio(options);
+            var response = await dio.post(Address.managerLogin(),data: {
+              "account": userName, "password": password
+            });
+            if (response.data["status"] == 200) {
+              if(response.data["data"]["manager"]["status"]){
+                LocalStorage.save("jobNum", response.data["data"]["manager"]["jobNum"]??"");
+                LocalStorage.save("account", response.data["data"]["manager"]["account"]??"");
+                Navigator.pushReplacementNamed(context, '/ManagerMain_Page');
+              }else{
+                CommonUtil.showMyToast("该账号已禁用，请联系管理员~");
+              }
+            }
+          } catch (err) {
+            CommonUtil.showMyToast("系统开小差了~");
+          }
+        }
+
     }
   }
 
@@ -194,9 +217,27 @@ class _LoginPageState extends State<LoginPage>
                                     onSaved: (value) {
                                       password = value;
                                     })),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: <Widget>[
+                                Text("普通用户",style: TextStyle(
+                                  fontSize: MyFonts.f_12
+                                )),
+                                Switch(
+                                    activeColor: MyColors.green_8d,
+                                    value: _identity,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _identity = value;
+                                      });
+                                    }),
+                                Text("管理员",style: TextStyle(
+                                    fontSize: MyFonts.f_12
+                                ))
+                              ]
+                            ),
                             new Container(
                                 height: 45.0,
-                                margin: EdgeInsets.only(top: 40.0),
                                 decoration: BoxDecoration(
                                     borderRadius:
                                         BorderRadius.all(Radius.circular(45)),

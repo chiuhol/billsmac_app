@@ -1,5 +1,6 @@
 import 'package:billsmac_app/Common/CommonInsert.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 ///Author:chiuhol
@@ -169,6 +170,10 @@ class _UsersPageState extends State<UsersPage> {
               },
               //展开内容
               body: Column(children: <Widget>[
+                ListTile(
+                  leading: Text("ID"),
+                  title: new Text(user["_id"] ?? "未设置"),
+                ),
                 ListTile(
                   leading: Text("昵称"),
                   title: new Text(user["nikeName"] ?? "未设置"),
