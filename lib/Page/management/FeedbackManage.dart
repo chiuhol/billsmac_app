@@ -188,6 +188,24 @@ class _FeedbackManageState extends State<FeedbackManage> {
     }
   }
 
+  @protected
+  _updateFeedback(id,status) async {
+    try {
+      BaseOptions options = BaseOptions(
+          method: "patch");
+      var dio = new Dio(options);
+      var response = await dio.patch(Address.updateFeedback(id),data: {
+        "status":status
+      });
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+      }
+    } catch (err) {
+      print(err.toString());
+      CommonUtil.showMyToast("系统开小差了~");
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -298,17 +316,35 @@ class _FeedbackManageState extends State<FeedbackManage> {
                       Text(_feedback["contactWay"] ?? "",
                           style: TextStyle(fontSize: MyFonts.f_16))
                     ])),
-            Padding(
-                padding: EdgeInsets.only(bottom: 10),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text("反馈时间", style: TextStyle(fontSize: MyFonts.f_16)),
+                  Text(
+                      _feedback["createdAt"].toString().substring(0, 10) ??
+                          "",
+                      style: TextStyle(fontSize: MyFonts.f_16))
+                ]),
+            Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text("状态", style: TextStyle(fontSize: MyFonts.f_16)),
+                  Row(
                     children: <Widget>[
-                      Text("反馈时间", style: TextStyle(fontSize: MyFonts.f_16)),
-                      Text(
-                          _feedback["createdAt"].toString().substring(0, 10) ??
-                              "",
-                          style: TextStyle(fontSize: MyFonts.f_16))
-                    ]))
+                      Text("未处理",style: TextStyle(fontSize: MyFonts.f_12)),
+                      Switch(
+                          activeColor: MyColors.green_8d,
+                          value: _feedback["status"]??false,
+                          onChanged: (value) {
+                            setState(() {
+                              _updateFeedback(_feedback["_id"],value);
+                              _feedback["status"] = value;
+                            });
+                          }),
+                      Text("已处理",style: TextStyle(fontSize: MyFonts.f_12))
+                    ]
+                  )
+                ])
           ])),
       SizedBox(height: 10)
     ]);

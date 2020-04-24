@@ -1,4 +1,5 @@
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import 'LoginPage.dart';
@@ -22,6 +23,32 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
   int _idx = 0;
 
   String _title = '后台管理';
+  String _account = "";
+  String _jobNum = "";
+
+  @protected
+  _getMsg()async{
+    String account = await LocalStorage.get("account").then((result) {
+      return result;
+    });
+    String jobNum= await LocalStorage.get("jobNum").then((result) {
+      return result;
+    });
+    if(mounted){
+      setState(() {
+        _account = account;
+        _jobNum = jobNum;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    _getMsg();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,19 +59,26 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
         padding: const EdgeInsets.only(),
         children: <Widget>[
           new UserAccountsDrawerHeader(
-            accountName: new Text('XXXXX'),
-            accountEmail: new Text('XXXXXXXXXXX'),
+            accountName: Row(
+              children: <Widget>[
+                Text("工号："),
+                Text(_jobNum)
+              ]
+            ),
+            accountEmail: Row(
+              children: <Widget>[
+                Text("账号："),
+                Text(_account)
+              ]
+            ),
 //          设置人物头像
             currentAccountPicture: new CircleAvatar(
               backgroundImage: new NetworkImage(
-                  'http://n.sinaimg.cn/translate/20170726/Zjd3-fyiiahz2863063.jpg'),
+                  'https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=3305298991,2024211813&fm=26&gp=0.jpg'),
             ),
             decoration: BoxDecoration(
                 color: Colors.redAccent,
                 borderRadius: BorderRadius.all(Radius.circular(5.0))),
-            onDetailsPressed: () {
-//              ToastUtil.show(context, "tap");
-            },
           ),
           new ListTile(
               title: new Text('个人中心'),
@@ -52,22 +86,6 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
               onTap: () {
                 Navigator.of(context).pop();
                 Navigator.pushNamed(context, '/LifecyclePage');
-              }),
-          new Divider(),
-          new ListTile(
-              title: new Text('Route 学习'),
-              trailing: new Icon(Icons.arrow_right),
-              onTap: () {
-                Navigator.of(context).pop(); /*隐藏drawer*/
-                Navigator.pushNamed(context, '/RoutePage');
-              }),
-          new Divider(),
-          new ListTile(
-              title: new Text('数据存储 学习'),
-              trailing: new Icon(Icons.arrow_right),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.pushNamed(context, '/DataPage');
               }),
           new Divider(),
           new ListTile(

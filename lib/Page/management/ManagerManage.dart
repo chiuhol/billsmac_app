@@ -15,6 +15,9 @@ class _ManagerManageState extends State<ManagerManage> {
   bool _done = false;
   List _managerLst = [];
   TextEditingController _searchController = TextEditingController();
+  TextEditingController _jobNumController = TextEditingController();
+  TextEditingController _accountController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
   bool _cleanStatus = false;
   String _query = "";
   int _pageIndex = 1;
@@ -58,17 +61,14 @@ class _ManagerManageState extends State<ManagerManage> {
   }
 
   @protected
-  _updateManagers(id,status) async {
+  _updateManagers(id, status) async {
     try {
-      BaseOptions options = BaseOptions(
-          method: "patch");
+      BaseOptions options = BaseOptions(method: "patch");
       var dio = new Dio(options);
-      var response = await dio.patch(Address.updateManagers(id),data: {
-        "status":status
-      });
+      var response =
+          await dio.patch(Address.updateManagers(id), data: {"status": status});
       print(response.data.toString());
-      if (response.data["status"] == 200) {
-      }
+      if (response.data["status"] == 200) {}
     } catch (err) {
       CommonUtil.showMyToast("系统开小差了~");
     }
@@ -82,85 +82,237 @@ class _ManagerManageState extends State<ManagerManage> {
     _getManagers();
   }
 
+  _addManager() async {
+    try {
+      BaseOptions options = BaseOptions(method: "post");
+      var dio = new Dio(options);
+      var response = await dio.post(Address.addManagers(), data: {
+        "jobNum": _jobNumController.text,
+        "account": _accountController.text,
+        "password": _passwordController.text
+      });
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        if (mounted) {
+          setState(() {
+            _managerLst.add(response.data["data"]["manager"]);
+          });
+        }
+      }
+    } catch (err) {
+      print(err.toString());
+      if(err.toString() == "DioError [DioErrorType.RESPONSE]: Http status error [409]"){
+        CommonUtil.showMyToast("该账号已存在");
+        return;
+      }
+      CommonUtil.showMyToast("系统开小差了~");
+    }
+  }
+
+  _addManagerDialog() async {
+    await showDialog(
+        context: context,
+        barrierDismissible: true,
+        child: new SimpleDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            title: Container(
+                margin: EdgeInsets.only(left: 80),
+                child: Text('添加管理员',
+                    style: TextStyle(
+                        color: MyColors.black_33, fontSize: MyFonts.f_16))),
+            contentPadding: const EdgeInsets.all(10.0),
+            children: <Widget>[
+              SeparatorWidget(),
+              SizedBox(height: 13.5),
+              Column(children: <Widget>[
+                Row(children: <Widget>[
+                  Text("工号：", style: TextStyle(fontSize: MyFonts.f_16)),
+                  Expanded(
+                      child: TextField(
+                          maxLines: 1,
+                          controller: _jobNumController,
+                          keyboardType: TextInputType.phone,
+                          cursorColor: MyColors.green_8d,
+                          style: TextStyle(
+                              color: MyColors.green_8d, fontSize: MyFonts.f_18),
+                          decoration: InputDecoration(
+                              hintText: '请输入工号',
+                              hintStyle: TextStyle(
+                                fontSize: MyFonts.f_16,
+                                color: MyColors.red_5c,
+                              ),
+                              border: InputBorder.none)))
+                ]),
+                Padding(
+                    padding: EdgeInsets.only(top: 18, bottom: 18),
+                    child: Row(children: <Widget>[
+                      Text("账号：", style: TextStyle(fontSize: MyFonts.f_16)),
+                      Expanded(
+                          child: TextField(
+                              maxLines: 1,
+                              controller: _accountController,
+                              keyboardType: TextInputType.phone,
+                              cursorColor: MyColors.green_8d,
+                              style: TextStyle(
+                                  color: MyColors.green_8d,
+                                  fontSize: MyFonts.f_18),
+                              decoration: InputDecoration(
+                                  hintText: '请输入账号',
+                                  hintStyle: TextStyle(
+                                    fontSize: MyFonts.f_16,
+                                    color: MyColors.red_5c,
+                                  ),
+                                  border: InputBorder.none)))
+                    ])),
+                Row(children: <Widget>[
+                  Text("密码：", style: TextStyle(fontSize: MyFonts.f_16)),
+                  Expanded(
+                      child: TextField(
+                          maxLines: 1,
+                          controller: _passwordController,
+                          cursorColor: MyColors.green_8d,
+                          style: TextStyle(
+                              color: MyColors.green_8d, fontSize: MyFonts.f_18),
+                          decoration: InputDecoration(
+                              hintText: '请输入密码',
+                              hintStyle: TextStyle(
+                                fontSize: MyFonts.f_16,
+                                color: MyColors.red_5c,
+                              ),
+                              border: InputBorder.none)))
+                ])
+              ]),
+              SizedBox(height: 13.5),
+              SeparatorWidget(),
+              Container(
+                  height: 45,
+                  child: RaisedButton(
+                      color: MyColors.white_ff,
+                      elevation: 0,
+                      splashColor: MyColors.white_ff,
+                      child: Text('添加',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: MyColors.green_8d,
+                              fontSize: MyFonts.f_14)),
+                      onPressed: () {
+                        if (_jobNumController.text == '') {
+                          CommonUtil.showMyToast("请输入工号");
+                          return;
+                        }
+                        if (_accountController.text == '') {
+                          CommonUtil.showMyToast("请输入账号");
+                          return;
+                        }
+                        if (_passwordController.text == '') {
+                          CommonUtil.showMyToast("请输入密码");
+                          return;
+                        }
+                        if (_jobNumController.text.length > 6) {
+                          CommonUtil.showMyToast("工号长度规定为1-6");
+                          return;
+                        }
+                        if (_accountController.text.length > 12) {
+                          CommonUtil.showMyToast("账号长度规定为1-12");
+                          return;
+                        }
+                        if (_passwordController.text.length < 6 ||
+                            _passwordController.text.length > 12) {
+                          CommonUtil.showMyToast("密码长度规定为6-12");
+                          return;
+                        }
+                        Navigator.pop(context);
+                        _addManager();
+                      }))
+            ]));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
           child: SingleChildScrollView(
               child: Column(children: <Widget>[
-                Padding(
-                    padding: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
-                    child: Row(children: <Widget>[
-                      Expanded(
-                          child: Container(
-                              margin: EdgeInsets.only(left: 10, right: 10),
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                                  color: MyColors.grey_f5),
-                              child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: <Widget>[
-                                    Padding(
-                                        padding: EdgeInsets.only(left: 12, right: 12),
-                                        child: Icon(
-                                            IconData(0xe63a, fontFamily: 'MyIcons'),
-                                            size: 18,
-                                            color: MyColors.red_5c)),
-                                    Expanded(
-                                        child: TextField(
-                                            maxLines: 1,
-                                            controller: _searchController,
-                                            cursorColor: MyColors.green_8d,
-                                            onChanged: (value) {
-                                              if (mounted) {
-                                                setState(() {
-                                                  if (value != '') {
-                                                    _cleanStatus = true;
-                                                  } else {
-                                                    _cleanStatus = false;
-                                                  }
-                                                });
-                                              }
-                                            },
-                                            style: TextStyle(
-                                                color: MyColors.green_8d,
-                                                fontSize: MyFonts.f_18),
-                                            decoration: InputDecoration(
-                                                hintText: '请输入搜索内容(工号)',
-                                                hintStyle: TextStyle(
-                                                  fontSize: MyFonts.f_16,
-                                                  color: MyColors.red_5c,
-                                                ),
-                                                border: InputBorder.none))),
-                                    _cleanStatus == true
-                                        ? GestureDetector(
-                                        behavior: HitTestBehavior.translucent,
-                                        onTap: () {
-                                          if (mounted) {
-                                            setState(() {
-                                              _cleanStatus = false;
-                                              _searchController.clear();
-                                            });
+        Padding(
+            padding: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
+            child: Row(children: <Widget>[
+              GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    _addManagerDialog();
+                  },
+                  child: Icon(Icons.add)),
+              Expanded(
+                  child: Container(
+                      margin: EdgeInsets.only(left: 10, right: 10),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                          color: MyColors.grey_f5),
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Padding(
+                                padding: EdgeInsets.only(left: 12, right: 12),
+                                child: Icon(
+                                    IconData(0xe63a, fontFamily: 'MyIcons'),
+                                    size: 18,
+                                    color: MyColors.red_5c)),
+                            Expanded(
+                                child: TextField(
+                                    maxLines: 1,
+                                    controller: _searchController,
+                                    cursorColor: MyColors.green_8d,
+                                    onChanged: (value) {
+                                      if (mounted) {
+                                        setState(() {
+                                          if (value != '') {
+                                            _cleanStatus = true;
+                                          } else {
+                                            _cleanStatus = false;
                                           }
-                                        },
-                                        child: Icon(Icons.clear,
-                                            color: MyColors.red_5c, size: 24))
-                                        : Container(),
-                                    SizedBox(width: 10)
-                                  ]))),
-                      GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onTap: () {
-                            if(mounted){
-                              setState(() {
-                                _managerLst = [];
-                                _query = _searchController.text;
-                              });
-                            }
-                            _getManagers();
-                          },
-                          child: Text('搜索'))
-                    ])),
+                                        });
+                                      }
+                                    },
+                                    style: TextStyle(
+                                        color: MyColors.green_8d,
+                                        fontSize: MyFonts.f_18),
+                                    decoration: InputDecoration(
+                                        hintText: '请输入搜索内容(工号)',
+                                        hintStyle: TextStyle(
+                                          fontSize: MyFonts.f_16,
+                                          color: MyColors.red_5c,
+                                        ),
+                                        border: InputBorder.none))),
+                            _cleanStatus == true
+                                ? GestureDetector(
+                                    behavior: HitTestBehavior.translucent,
+                                    onTap: () {
+                                      if (mounted) {
+                                        setState(() {
+                                          _cleanStatus = false;
+                                          _searchController.clear();
+                                        });
+                                      }
+                                    },
+                                    child: Icon(Icons.clear,
+                                        color: MyColors.red_5c, size: 24))
+                                : Container(),
+                            SizedBox(width: 10)
+                          ]))),
+              GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    if (mounted) {
+                      setState(() {
+                        _managerLst = [];
+                        _query = _searchController.text;
+                      });
+                    }
+                    _getManagers();
+                  },
+                  child: Text('搜索'))
+            ])),
         _done == false
             ? Center(child: Text("加载中......"))
             : _managerLst.length == 0
@@ -199,7 +351,7 @@ class _ManagerManageState extends State<ManagerManage> {
     );
   }
 
-  Widget itemBuilder(BuildContext context,int index){
+  Widget itemBuilder(BuildContext context, int index) {
     Map _manager = _managerLst[index];
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
         Widget>[
@@ -229,14 +381,13 @@ class _ManagerManageState extends State<ManagerManage> {
             Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Text("状态",
-                      style: TextStyle(fontSize: MyFonts.f_16)),
+                  Text("状态", style: TextStyle(fontSize: MyFonts.f_16)),
                   Switch(
                       activeColor: MyColors.green_8d,
-                      value: _manager["status"]??false,
+                      value: _manager["status"] ?? false,
                       onChanged: (value) {
                         setState(() {
-                          _updateManagers(_manager["_id"],value);
+                          _updateManagers(_manager["_id"], value);
                           _manager["status"] = value;
                         });
                       })

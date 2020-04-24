@@ -28,6 +28,11 @@ class Address {
     return '$host/managers';
   }
 
+  //添加管理员
+  static String addManagers(){
+    return '$host/managers';
+  }
+
   //修改管理员信息
   static String updateManagers(String managerId){
     return '$host/managers/$managerId';
@@ -118,6 +123,11 @@ class Address {
     return '$host/feedback';
   }
 
+  //修改反馈
+  static String updateFeedback(String feedbackId){
+    return '$host/feedback/$feedbackId';
+  }
+
   //查看反馈历史
   static String getFeedback(String userId){
     return '$host/feedback/$userId';
@@ -131,6 +141,16 @@ class Address {
   //增加用户对象
   static String saveObjects(String userId){
     return '$host/users/$userId/objects';
+  }
+
+  //获取全部社区文章
+  static String getArticles(){
+    return '$host/communityActicles';
+  }
+
+  //新建社区文章
+  static String newArticles(){
+    return '$host/communityActicles';
   }
 
 }

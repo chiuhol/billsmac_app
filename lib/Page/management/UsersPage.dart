@@ -70,6 +70,58 @@ class _UsersPageState extends State<UsersPage> {
     _getUsers("");
   }
 
+  _delUser(id)async{
+    try {
+      BaseOptions options = BaseOptions(
+          method: "delete");
+      var dio = new Dio(options);
+      var response = await dio.delete(Address.deleteUser(id));
+      print(response.data.toString());
+      if (response.data["status"] == 204) {
+        CommonUtil.showMyToast("删除成功");
+        if(mounted){
+          setState(() {
+            for(int i=0;i<_userLst.length;i++){
+              if(_userLst[i]["_id"] == id){
+                _userLst.removeAt(i);
+              }
+            }
+          });
+        }
+      }
+    } catch (err) {
+      print(err.toString());
+      CommonUtil.showMyToast("系统开小差了~");
+    }
+  }
+
+  _showDialog(id){
+    showCupertinoDialog(
+        context: context,
+        builder: (_) => CupertinoAlertDialog(
+            content: Text('确定删除该用户吗？'),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                  child: Text(
+                    '取消',
+                    style: TextStyle(color: MyColors.black_33),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  }),
+              CupertinoDialogAction(
+                child: Text(
+                  '确定',
+                  style: TextStyle(color: MyColors.red_43),
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  _delUser(id);
+                },
+              )
+            ]));
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
         body: SingleChildScrollView(
@@ -206,7 +258,9 @@ class _UsersPageState extends State<UsersPage> {
                   child: new Text("删除用户"),
                   color: Colors.redAccent,
                   textColor: Colors.white,
-                  onPressed: () {},
+                  onPressed: () {
+                    _showDialog(user["_id"]);
+                  },
                   disabledColor: Colors.grey,
                   disabledTextColor: Colors.white,
                   disabledElevation: 4,
