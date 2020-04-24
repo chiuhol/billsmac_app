@@ -1,6 +1,7 @@
 import 'package:billsmac_app/Common/CommonInsert.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 ///Author:chiuhol
@@ -44,13 +45,41 @@ class _CommunityManageState extends State<CommunityManage> {
           method: "get",
           queryParameters: {"q": _query, "page": _pageIndex, "per_Page": 10});
       var dio = new Dio(options);
-      var response = await dio.get(Address.getArticles());
+      var response = await dio.get(Address.getAllArticles());
       print(response.data.toString());
       if (response.data["status"] == 200) {
         if (mounted) {
           setState(() {
             _articleLst.addAll(response.data["data"]["acticle"]);
             _done = true;
+          });
+        }
+      }
+    } catch (err) {
+      CommonUtil.showMyToast("系统开小差了~");
+    }
+  }
+
+  @protected
+  _updateArticle(id,msg,isUpdate)async{
+    try {
+      BaseOptions options = BaseOptions(
+          method: "patch");
+      var dio = new Dio(options);
+      var response = await dio.patch(Address.updateArticles(id),data: msg);
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        if (mounted) {
+          setState(() {
+            if(isUpdate){
+              _articleLst.forEach((items){
+                if(items["_id"] == id){
+                  items["title"] = msg["title"];
+                  items["subTitle"] = msg["subTitle"];
+                  items["content"] = msg["content"];
+                }
+              });
+            }
           });
         }
       }
@@ -92,7 +121,7 @@ class _CommunityManageState extends State<CommunityManage> {
   TextEditingController _subTitleController = TextEditingController();
 
   @protected
-  _addArticle() {
+  _addArticle(msg) {
     _contentController.clear();
     _titleController.clear();
     _subTitleController.clear();
@@ -104,7 +133,7 @@ class _CommunityManageState extends State<CommunityManage> {
             Container(
                 height: 15, width: double.infinity, color: Colors.black54),
             Container(
-                child: bottomSheet(_contentController,_titleController,_subTitleController),
+                child: bottomSheet(msg,_contentController,_titleController,_subTitleController),
                 decoration: BoxDecoration(
                     color: MyColors.white_fe,
                     borderRadius: BorderRadius.only(
@@ -113,12 +142,32 @@ class _CommunityManageState extends State<CommunityManage> {
           ]);
         }).then((value) {
       if (value != null) {
-        _newArticle(value);
+        Map msg = {
+          "title":value["title"],
+          "subTitle":value["subTitle"],
+          "content":value["content"]
+        };
+        if(value["type"] == "发布"){
+          print("发布");
+          _newArticle(msg);
+        }else{
+          print("更新");
+          _updateArticle(value["id"], msg,true);
+        }
       }
     });
   }
 
-  Widget bottomSheet(TextEditingController _contentController,TextEditingController _titleController, TextEditingController _subTitleController) {
+  Widget bottomSheet(msg,TextEditingController _contentController,TextEditingController _titleController, TextEditingController _subTitleController) {
+    String _title = "新建社区文章";
+    String _action = "发布";
+    if(msg != ''){
+      _contentController.text = msg["content"];
+      _titleController.text = msg["title"];
+      _subTitleController.text = msg["subTitle"];
+      _title = "修改社区文章";
+      _action = "修改";
+    }
     return Padding(
         padding: EdgeInsets.only(top: 18),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
@@ -137,7 +186,7 @@ class _CommunityManageState extends State<CommunityManage> {
                             style: TextStyle(
                                 color: MyColors.red_34,
                                 fontSize: MyFonts.f_16))),
-                    Text("新建社区文章",
+                    Text(_title,
                         textAlign: TextAlign.left,
                         style: TextStyle(
                             color: MyColors.black_1a,
@@ -154,12 +203,14 @@ class _CommunityManageState extends State<CommunityManage> {
                             return;
                           }
                           Navigator.of(context).pop({
+                            "type":msg == ''?"发布":"修改",
+                            "id":msg["_id"],
                             "title":_titleController.text,
                             "subTitle":_subTitleController.text,
                             "content":_contentController.text,
                           });
                         },
-                        child: Text('发布',
+                        child: Text(_action,
                             style: TextStyle(
                                 color: MyColors.blue_f6,
                                 fontSize: MyFonts.f_16)))
@@ -246,7 +297,7 @@ class _CommunityManageState extends State<CommunityManage> {
                         GestureDetector(
                             behavior: HitTestBehavior.translucent,
                             onTap: () {
-                              _addArticle();
+                              _addArticle("");
                             },
                             child: Icon(Icons.add)),
                         Expanded(
@@ -357,78 +408,120 @@ class _CommunityManageState extends State<CommunityManage> {
             ]))));
   }
 
+  SlidableController _articleController = SlidableController();
+
   Widget itemBuilder(BuildContext context, int index) {
     Map _article = _articleLst[index];
     return Padding(
         padding: EdgeInsets.only(left: 12),
-        child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTap: () {
-              if (_article["_id"] != null && _article["_id"] != '') {
+        child: Slidable(
+            actionPane: SlidableDrawerActionPane(),
+            actionExtentRatio: 0.25,
+            controller: _articleController,
+            key: Key(UniqueKey().toString()),
+          child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
+                if (_article["_id"] != null && _article["_id"] != '') {
 //                CommonUtil.openPage(
 //                    context, DetailPage(articleId: _article["_id"]));
-              } else {
-                CommonUtil.showMyToast("请刷新页面");
-              }
-            },
-            child: Column(children: <Widget>[
-              index == 0 ? SizedBox(height: 18) : SizedBox(),
-              Container(
-                  color: MyColors.white_fe,
-                  padding: EdgeInsets.only(top: 18, bottom: 18),
-                  child: Row(children: <Widget>[
-                    Expanded(
-                        child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Padding(
-                                  padding: EdgeInsets.only(left: 8, right: 5),
-                                  child: Text((index + 1).toString(),
-                                      style: TextStyle(
-                                          color: MyColors.grey_99,
-                                          fontSize: MyFonts.f_18,
-                                          fontWeight: FontWeight.bold))),
-                              SizedBox(width: 8),
-                              Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Text(_article["title"] ?? "",
-                                        style: TextStyle(
-                                            color: MyColors.black_1a,
-                                            fontSize: MyFonts.f_16,
-                                            fontWeight: (index == 0 ||
-                                                index == 1 ||
-                                                index == 2)
-                                                ? FontWeight.bold
-                                                : FontWeight.normal)),
-                                    SizedBox(height: 5),
-                                    _article["subTitle"] != null
-                                        ? Text(_article["subTitle"],
+                } else {
+                  CommonUtil.showMyToast("请刷新页面");
+                }
+              },
+              child: Column(children: <Widget>[
+                index == 0 ? SizedBox(height: 18) : SizedBox(),
+                Container(
+                    color: MyColors.white_fe,
+                    padding: EdgeInsets.only(top: 18, bottom: 18),
+                    child: Row(children: <Widget>[
+                      Expanded(
+                          child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Padding(
+                                    padding: EdgeInsets.only(left: 8, right: 5),
+                                    child: Text((index + 1).toString(),
                                         style: TextStyle(
                                             color: MyColors.grey_99,
-                                            fontSize: MyFonts.f_15))
-                                        : Text(''),
-                                    SizedBox(height: 5),
-                                    Text(_article["UnitTen"].toString() + "热度",
-                                        style: TextStyle(
-                                            color: MyColors.grey_99,
-                                            fontSize: MyFonts.f_15))
-                                  ])
-                            ])),
-                    (_article["thumbnail"] != null &&
-                        _article["thumbnail"] != '')
-                        ? ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
-                            "http://116.62.141.151" +
-                                _article["thumbnail"]
-                                    .toString()
-                                    .substring(21),
-                            width: 80,
-                            height: 60))
-                        : Container()
-                  ])),
-              SeparatorWidget()
-            ])));
+                                            fontSize: MyFonts.f_18,
+                                            fontWeight: FontWeight.bold))),
+                                SizedBox(width: 8),
+                                Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(_article["title"] ?? "",
+                                          style: TextStyle(
+                                              color: MyColors.black_1a,
+                                              fontSize: MyFonts.f_16,
+                                              fontWeight: FontWeight.normal)),
+                                      SizedBox(height: 5),
+                                      _article["subTitle"] != null
+                                          ? Text(_article["subTitle"],
+                                          style: TextStyle(
+                                              color: MyColors.grey_99,
+                                              fontSize: MyFonts.f_15))
+                                          : Text(''),
+                                      SizedBox(height: 5),
+                                      Text(_article["UnitTen"].toString() + "热度",
+                                          style: TextStyle(
+                                              color: MyColors.grey_99,
+                                              fontSize: MyFonts.f_15))
+                                    ])
+                              ])),
+                      (_article["thumbnail"] != null &&
+                          _article["thumbnail"] != '')
+                          ? ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.network(
+                              "http://116.62.141.151" +
+                                  _article["thumbnail"]
+                                      .toString()
+                                      .substring(21),
+                              width: 80,
+                              height: 60))
+                          : Container()
+                    ])),
+                SeparatorWidget()
+              ])),
+            actions: <Widget>[],
+            secondaryActions: <Widget>[
+              GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  child: Container(
+                      height: 100,
+                      width: 50,
+                      color: MyColors.green_8d,
+                      child: Center(
+                          child: Text('修改',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: MyColors.white_ff,
+                                  fontSize: MyFonts.f_18)))),
+                  onTap: () {
+                    _addArticle(_article);
+                  }),
+              GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  child: Container(
+                      height: 100,
+                      width: 50,
+                      color: _article["status"] == false?MyColors.green_ad:MyColors.red_43,
+                      child: Center(
+                          child: Text(_article["status"] == false?'启用':'禁用',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: MyColors.white_ff,
+                                  fontSize: MyFonts.f_18)))),
+                  onTap: () {
+                    if(mounted){
+                      setState(() {
+                        _article["status"] = !_article["status"];
+                      });
+                    }
+                    _updateArticle(_article["_id"],{"status":!_article["status"]},false);
+                  })
+            ]
+        ));
   }
 }

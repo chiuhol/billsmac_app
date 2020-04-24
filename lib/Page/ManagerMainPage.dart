@@ -27,14 +27,14 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
   String _jobNum = "";
 
   @protected
-  _getMsg()async{
+  _getMsg() async {
     String account = await LocalStorage.get("account").then((result) {
       return result;
     });
-    String jobNum= await LocalStorage.get("jobNum").then((result) {
+    String jobNum = await LocalStorage.get("jobNum").then((result) {
       return result;
     });
-    if(mounted){
+    if (mounted) {
       setState(() {
         _account = account;
         _jobNum = jobNum;
@@ -59,18 +59,8 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
         padding: const EdgeInsets.only(),
         children: <Widget>[
           new UserAccountsDrawerHeader(
-            accountName: Row(
-              children: <Widget>[
-                Text("工号："),
-                Text(_jobNum)
-              ]
-            ),
-            accountEmail: Row(
-              children: <Widget>[
-                Text("账号："),
-                Text(_account)
-              ]
-            ),
+            accountName: Row(children: <Widget>[Text("工号："), Text(_jobNum)]),
+            accountEmail: Row(children: <Widget>[Text("账号："), Text(_account)]),
 //          设置人物头像
             currentAccountPicture: new CircleAvatar(
               backgroundImage: new NetworkImage(
@@ -109,9 +99,9 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
         return ManagerManage();
       } else if (_idx == 4) {
         return FeedbackManage();
-      } else if(_idx == 5){
+      } else if (_idx == 5) {
         return SystemManage();
-      }else {
+      } else {
         return Center(child: Text('欢迎您'));
       }
     }
@@ -119,6 +109,21 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
     return Scaffold(
       appBar: new AppBar(
           title: new Text("每日记账-$_title"),
+          actions: <Widget>[
+            Padding(
+                padding: EdgeInsets.only(right: 18),
+                child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      if (mounted) {
+                        setState(() {
+                          _idx = 0;
+                          _title = '后台管理';
+                        });
+                      }
+                    },
+                    child: Icon(Icons.home)))
+          ],
           backgroundColor: Colors.redAccent,
           centerTitle: true),
       //头部的标题AppBar
@@ -203,19 +208,18 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
               },
             ),
             SpeedDialChild(
-              child: Icon(Icons.library_books),
-              backgroundColor: Colors.purple,
-              label: '处理反馈',
-              labelStyle: TextStyle(fontSize: 18.0),
-              onTap: () {
-                if (mounted) {
-                  setState(() {
-                    _title = "处理反馈";
-                    _idx = 4;
-                  });
-                }
-              }
-            ),
+                child: Icon(Icons.library_books),
+                backgroundColor: Colors.purple,
+                label: '处理反馈',
+                labelStyle: TextStyle(fontSize: 18.0),
+                onTap: () {
+                  if (mounted) {
+                    setState(() {
+                      _title = "处理反馈";
+                      _idx = 4;
+                    });
+                  }
+                }),
             SpeedDialChild(
                 child: Icon(Icons.android),
                 backgroundColor: Colors.blueAccent,

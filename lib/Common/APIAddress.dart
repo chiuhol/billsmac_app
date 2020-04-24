@@ -143,9 +143,14 @@ class Address {
     return '$host/users/$userId/objects';
   }
 
-  //获取全部社区文章
+  //获取社区文章
   static String getArticles(){
     return '$host/communityActicles';
+  }
+
+  //获取全部社区文章
+  static String getAllArticles(){
+    return '$host/communityActicles/manager';
   }
 
   //新建社区文章
@@ -153,4 +158,8 @@ class Address {
     return '$host/communityActicles';
   }
 
+  //修改社区文章
+  static String updateArticles(String articleId){
+    return '$host/communityActicles/$articleId';
+  }
 }
