@@ -116,8 +116,7 @@ class _ManagerManageState extends State<ManagerManage> {
         child: new SimpleDialog(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            title: Container(
-                margin: EdgeInsets.only(left: 80),
+            title: Center(
                 child: Text('添加管理员',
                     style: TextStyle(
                         color: MyColors.black_33, fontSize: MyFonts.f_16))),

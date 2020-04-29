@@ -32,6 +32,8 @@ class _TallyMainPageState extends State<TallyMainPage>
   double _income = 30.0;
   double _outcome = 40.0;
 
+  String _avatar = 'http://p2.qhimgs4.com/t014719903aa3245983.jpg';
+
   int _pageIndex = 1;
 
   List _categoryLst = [
@@ -149,6 +151,7 @@ class _TallyMainPageState extends State<TallyMainPage>
         if (mounted) {
           setState(() {
             _chatContentLst = response.data["data"]["chatContent"];
+            _chatContentLst = _chatContentLst.reversed.toList();//倒置
           });
         }
       }
@@ -193,11 +196,24 @@ class _TallyMainPageState extends State<TallyMainPage>
     }
   }
 
+  @protected
+  _getPersonalMsg()async{
+    String _avatarUrl = await LocalStorage.get("avatar_url").then((result) {
+      return result;
+    });
+    if(mounted){
+      setState(() {
+        _avatar = _avatarUrl;
+      });
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
+    _getPersonalMsg();//获取用户信息
 //    _checkToken();
     _getChatroom(); //获取聊天室信息
 
@@ -241,12 +257,12 @@ class _TallyMainPageState extends State<TallyMainPage>
                     image: NetworkImage(_backgroundUrl), fit: BoxFit.cover)),
             child: SmartRefresher(
                 controller: _refreshController,
-                onRefresh: _onRefresh,
-                onLoading: _onLoading,
+                onRefresh: _onLoading,
+                onLoading: _onRefresh,
                 enablePullDown: true,
                 enablePullUp: true,
-                header: WaterDropHeader(),
-                footer: CustomFooter(
+                footer: WaterDropHeader(),
+                header: CustomFooter(
                     builder: (BuildContext context, LoadStatus mode) {
                   Widget body;
                   if (mode == LoadStatus.idle) {
@@ -376,13 +392,16 @@ class _TallyMainPageState extends State<TallyMainPage>
   Widget itemBuilderChat(BuildContext context, int index) {
     Map _chat = _chatContentLst[index];
     return Column(children: <Widget>[
-      time(_chat["createdAt"]),
+      time(_chat["createdAt"]??""),
       rightObject(_chat),
-//      leftObject(_chat["replyContent"])
+      leftObject(_chat["leftcontent"]??"")
     ]);
   }
 
   Widget leftObject(String title) {
+    if(title == ''){
+      return Container();
+    }
     return Container(
         padding: EdgeInsets.only(left: 12, top: 12),
         child:
@@ -394,7 +413,7 @@ class _TallyMainPageState extends State<TallyMainPage>
               },
               child: ClipOval(
                   child: Image.network(
-                      'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=1908196590,4061628990&fm=11&gp=0.jpg',
+                      'https://b-ssl.duitang.com/uploads/item/201701/13/20170113101107_aP5Fn.thumb.700_0.jpeg',
                       width: 45,
                       height: 45,
                       fit: BoxFit.cover))),
@@ -457,7 +476,7 @@ class _TallyMainPageState extends State<TallyMainPage>
               SizedBox(width: 12),
               ClipOval(
                   child: Image.network(
-                      'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=1379686624,47059782&fm=26&gp=0.jpg',
+                      _avatar,
                       width: 45,
                       height: 45,
                       fit: BoxFit.cover))

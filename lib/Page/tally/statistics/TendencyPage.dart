@@ -14,17 +14,15 @@ class _TendencyPageState extends State<TendencyPage> {
       height: double.infinity,
       color: MyColors.grey_f9,
       child: SingleChildScrollView(
-          physics: BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics()),
-        child: Column(
-          children: <Widget>[
+          physics:
+              BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          child: Column(children: <Widget>[
             Container(
               width: 380,
               height: 200,
               decoration: BoxDecoration(
-                color: MyColors.white_fe,
-                borderRadius: BorderRadius.all(Radius.circular(20))
-              ),
+                  color: MyColors.white_fe,
+                  borderRadius: BorderRadius.all(Radius.circular(20))),
               child: getBar(),
             ),
             SizedBox(height: 20),
@@ -33,13 +31,10 @@ class _TendencyPageState extends State<TendencyPage> {
               height: 200,
               decoration: BoxDecoration(
                   color: MyColors.white_fe,
-                  borderRadius: BorderRadius.all(Radius.circular(20))
-              ),
+                  borderRadius: BorderRadius.all(Radius.circular(20))),
               child: getLine(),
             )
-          ]
-        )
-      ),
+          ])),
     );
   }
 
@@ -92,12 +87,13 @@ class _TendencyPageState extends State<TendencyPage> {
 class Barsales {
   String day;
   int sale;
+
   Barsales(this.day, this.sale);
 }
 
 class Linesales {
   DateTime time;
   int sale;
+
   Linesales(this.time, this.sale);
 }
-

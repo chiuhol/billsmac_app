@@ -162,4 +162,29 @@ class Address {
   static String updateArticles(String articleId){
     return '$host/communityActicles/$articleId';
   }
+
+  //添加用户语料
+  static String addCorpus(String userId){
+    return '$host/users/$userId/corpus';
+  }
+
+  //获取用户语料
+  static String getCorpus(String userId){
+    return '$host/users/$userId/corpus';
+  }
+
+  //修改用户语料
+  static String updateCorpus(String userId,String corpusId){
+    return '$host/users/$userId/corpus/$corpusId';
+  }
+
+  //获取关于我们
+  static String getAboutUs(){
+    return '$host/aboutUs';
+  }
+
+  //修改关于我们
+  static String updateAboutUs(){
+    return '$host/aboutUs';
+  }
 }

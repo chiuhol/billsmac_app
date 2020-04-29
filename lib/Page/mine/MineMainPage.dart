@@ -8,6 +8,7 @@ import 'package:billsmac_app/Widget/SubprojectWidget.dart';
 import 'package:http/http.dart' as http;
 
 import 'PersonalInfoPage.dart';
+import 'TeachMePage.dart';
 import 'messageCenter/messageCenterMainPage.dart';
 
 ///@Author:chiuhol
@@ -154,7 +155,9 @@ class _MineMainPageState extends State<MineMainPage> {
                           padding: EdgeInsets.only(top: 50, bottom: 128),
                           child: Column(children: <Widget>[
                             SubprojectWidget(
-                                title: '调教我吧', icon: 0xe642, subTitle: '让我更懂你'),
+                                title: '调教我吧', icon: 0xe642, subTitle: '让我更懂你',function: (){
+                              CommonUtil.openPage(context, TeachMePage());
+                            }),
                             SeparatorWidget(),
                             SubprojectWidget(
                                 title: '记账提醒',

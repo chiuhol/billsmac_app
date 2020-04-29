@@ -51,6 +51,15 @@ class CommonUtil {
     return exp.hasMatch(phone);
   }
 
+  static isEmailAddress(String address) {
+    if (address == null) return false;
+
+    address = address.trim();
+
+    RegExp exp = RegExp(r'^[a-z,A-Z,0-9]+@[a-z,A-Z]+.[a-z,A-Z]+$');
+    return exp.hasMatch(address);
+  }
+
   static isPasswordValid(String password) {
     if (password == null) return false;
 

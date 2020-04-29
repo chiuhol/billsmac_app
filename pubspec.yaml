@@ -36,6 +36,7 @@ dependencies:
   gesture_password: "^0.0.4"
   flutter_cupertino_date_picker: ^1.0.12
   charts_flutter: ^0.8.1
+#  fl_chart: ^0.8.5
   table_calendar: ^2.2.2
   webview_flutter: 0.3.11
   sqflite: 1.1.8
