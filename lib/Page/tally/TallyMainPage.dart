@@ -250,6 +250,7 @@ class _TallyMainPageState extends State<TallyMainPage>
                 actions: <Widget>[rightEvenWidget()]),
             preferredSize: Size.fromHeight(108)),
         body: Container(
+          padding: EdgeInsets.only(bottom: 45),
             width: double.infinity,
             decoration: BoxDecoration(
                 color: MyColors.white_fe,
@@ -274,7 +275,7 @@ class _TallyMainPageState extends State<TallyMainPage>
                   } else {
                     body = Text("没有更多数据了");
                   }
-                  return Container(height: 55, child: Center(child: body));
+                  return Container(height: 20, child: Center(child: body));
                 }),
                 child: _chatContentLst.length == 0
                     ? Center(

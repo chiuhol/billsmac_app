@@ -26,7 +26,7 @@ class _AboutUsPageState extends State<AboutUsPage> {
           setState(() {
             _qqGroup = response.data["data"]["aboutUs"][0]["qqGroup"]??"暂无";
             _wechat = response.data["data"]["aboutUs"][0]["officialAccount"]??"暂无";
-            _wechat = response.data["data"]["aboutUs"][0]["emailAddress"]??"暂无";
+            _emailAddress = response.data["data"]["aboutUs"][0]["emailAddress"]??"暂无";
           });
         }
       }

@@ -187,4 +187,9 @@ class Address {
   static String updateAboutUs(){
     return '$host/aboutUs';
   }
+
+  //获取年度统计数据
+  static String static(String chatroomId){
+    return '$host/chatroom/$chatroomId/chatContent/static';
+  }
 }
