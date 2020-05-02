@@ -87,9 +87,8 @@ class _TendencyPageState extends State<TendencyPage> {
     super.initState();
 
     DateTime _now = DateTime.now();
-    int year = int.parse(_now.toString().substring(0, 4));
     for (int i = 0; i <= 10; i++) {
-      _yearLst.add(year - i);
+      _yearLst.add(_now.year - i);
     }
     _getMsg(_now.year);
   }

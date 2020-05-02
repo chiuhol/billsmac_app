@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -272,5 +273,27 @@ class CommonUtil {
       }
     } else
       return '';
+  }
+
+  //取小数点后几位
+  static formatNumber(double num,int postion){
+    if((num.toString().length-num.toString().lastIndexOf(".")-1)<postion){
+      //小数点后有几位小数
+      return num.toStringAsFixed(postion).substring(0,num.toString().lastIndexOf(".")+postion+1).toString();
+    }else{
+      return  num.toString().substring(0,num.toString().lastIndexOf(".")+postion+1).toString();
+    }
+  }
+
+  //随机颜色
+  static Color slRandomColor({int r = 200, int g = 200, int b = 200, a = 200}) {
+    if (r == 0 || g == 0 || b == 0) return Colors.black;
+    if (a == 0) return Colors.white;
+    return Color.fromARGB(
+      a,
+      r != 200 ? r : Random.secure().nextInt(r),
+      g != 200 ? g : Random.secure().nextInt(g),
+      b != 200 ? b : Random.secure().nextInt(b),
+    );
   }
 }
