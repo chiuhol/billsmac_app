@@ -5,6 +5,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'LoginPage.dart';
 import 'management/CommunityManage.dart';
 import 'management/FeedbackManage.dart';
+import 'management/MainPage.dart';
 import 'management/ManagerManage.dart';
 import 'management/SystemManage.dart';
 import 'management/UsersPage.dart';
@@ -102,7 +103,7 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
       } else if (_idx == 5) {
         return SystemManage();
       } else {
-        return Center(child: Text('欢迎您'));
+        return MainPage();
       }
     }
 

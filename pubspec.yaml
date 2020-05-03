@@ -48,6 +48,8 @@ dependencies:
   pin_input_text_field: ^2.1.0
   #获取设备信息
   device_info : ^0.2.0
+  #跑马灯
+  marquee_flutter: ^0.1.2
 
   flutter_staggered_animations: "^0.1.2"
     #  flutter_easyrefresh: ^1.0.1

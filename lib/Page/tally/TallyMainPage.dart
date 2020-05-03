@@ -28,13 +28,15 @@ class _TallyMainPageState extends State<TallyMainPage>
     with SingleTickerProviderStateMixin {
   String _chatroomName = '聊天室名称';
   String _backgroundUrl = "";
-  num _mouth = 2;
-  double _income = 30.0;
-  double _outcome = 40.0;
+  DateTime _now = DateTime.now();
+  num _mouth;
 
   String _avatar = 'http://p2.qhimgs4.com/t014719903aa3245983.jpg';
 
   int _pageIndex = 1;
+
+  num _expendTotle = 0;//总支出
+  num _incomeTotle = 0;//总收入
 
   List _categoryLst = [
     {"name": "热门"},
@@ -96,6 +98,32 @@ class _TallyMainPageState extends State<TallyMainPage>
       return;
     } else {
       CommonUtil.showMyToast("请重新登录");
+    }
+  }
+
+  //获取当月的总收入与总支出
+  @protected
+  _getTotle() async {
+    String _chatroomId = await LocalStorage.get("chatroomId").then((result) {
+      return result;
+    });
+    try {
+      BaseOptions options = BaseOptions(
+          method: "get", queryParameters: {"year": _now.year, "month": _now.month});
+      var dio = new Dio(options);
+      var response = await dio.get(Address.staticByType(_chatroomId));
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        if (mounted) {
+          setState(() {
+            _expendTotle = response.data["data"]["expendTotle"] ?? 0;
+            _incomeTotle = response.data["data"]["incomeTotle"] ?? 0;
+          });
+        }
+      }
+    } catch (err) {
+      print(err.toString());
+      CommonUtil.showMyToast("系统开小差了~");
     }
   }
 
@@ -217,6 +245,8 @@ class _TallyMainPageState extends State<TallyMainPage>
 //    _checkToken();
     _getChatroom(); //获取聊天室信息
 
+    _mouth = _now.month;
+    _getTotle();
     _tabController = TabController(
       length: _categoryLst.length,
       vsync: this,
@@ -305,7 +335,7 @@ class _TallyMainPageState extends State<TallyMainPage>
                 style:
                     TextStyle(color: MyColors.grey_aa, fontSize: MyFonts.f_14)),
             SizedBox(width: 5),
-            Text('收' + _income.toString() + ' / ' + '支' + _outcome.toString(),
+            Text('收' + _incomeTotle.toString() + ' / ' + '支' + _expendTotle.toString(),
                 style:
                     TextStyle(color: MyColors.grey_aa, fontSize: MyFonts.f_14))
           ]),
