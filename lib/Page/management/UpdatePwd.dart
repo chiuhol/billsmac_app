@@ -1,83 +1,57 @@
-import 'dart:io';
-
 import 'package:billsmac_app/Common/CommonInsert.dart';
 import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
 
-import '../../LoginPage.dart';
+import '../LoginPage.dart';
 
 ///Author:chiuhol
-///2020-3-7
+///2020-5-4
 
-class UpdatePasswordPage extends StatefulWidget {
+class UpdatePwd extends StatefulWidget {
   @override
-  _UpdatePasswordPageState createState() => _UpdatePasswordPageState();
+  _UpdatePwdState createState() => _UpdatePwdState();
 }
 
-class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
-  TextEditingController _oldPwdController = TextEditingController();
+class _UpdatePwdState extends State<UpdatePwd> {
   TextEditingController _newPwdController = TextEditingController();
   TextEditingController _new2PwdController = TextEditingController();
-
   bool _submitStatus = false;
 
   @protected
   _updatePassword() async {
-    String _userId = await LocalStorage.get("_id").then((result) {
-      return result;
-    });
-    String _phone = await LocalStorage.get("phone").then((result) {
-      return result;
-    });
-    String _token = await LocalStorage.get("token").then((result) {
+    String _manageId = await LocalStorage.get("_id").then((result) {
       return result;
     });
     try {
-      BaseOptions options = BaseOptions(
-          method: "patch",
-          headers: {HttpHeaders.AUTHORIZATION: "Bearer $_token"});
+      BaseOptions options = BaseOptions(method: "patch");
       var dio = new Dio(options);
-      var response = await dio.patch(Address.updatePwd(_userId), data: {
-        "phone": _phone,
-        "oldPwd": _oldPwdController.text,
-        "newPwd": _new2PwdController.text
-      });
+      var response = await dio.patch(Address.updateManagers(_manageId),
+          data: {"password": _new2PwdController.text});
       print(response.data.toString());
       if (response.data["status"] == 200) {
-        CommonUtil.showMyToast("密码修改成功，请重新登录");
+        CommonUtil.showMyToast("修改成功，请重新登录");
         CommonUtil.openPage(context, LoginPage());
       }
     } catch (err) {
-      CommonUtil.showMyToast(err.toString());
+      CommonUtil.showMyToast("系统开小差了~");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: MyAppBar(
-            title: "修改密码",
-            isBack: true,
-            backIcon: Icon(Icons.keyboard_arrow_left,
-                color: MyColors.black_32, size: 28),
-            color: MyColors.white_fe),
-        body: Container(
-          width: double.infinity,
-          height: double.infinity,
-          color: MyColors.grey_f6,
-          child: SingleChildScrollView(
-              physics:
-              BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-              child: Column(children: <Widget>[
-                textWidget(_oldPwdController, "请输入原密码"),
-                SeparatorWidget(),
-                textWidget(_newPwdController, "请设置新密码"),
-                SeparatorWidget(),
-                textWidget(_new2PwdController, "请再次输入新密码"),
-                submit()
-              ]))
-        ));
+    return Container(
+        width: double.infinity,
+        height: double.infinity,
+        child: SingleChildScrollView(
+            physics:
+                BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+            child: Column(children: <Widget>[
+              textWidget(_newPwdController, "请设置新密码"),
+              SeparatorWidget(),
+              textWidget(_new2PwdController, "请再次输入新密码"),
+              submit()
+            ])));
   }
 
   Widget submit() {
@@ -86,15 +60,15 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
         child: GestureDetector(
             behavior: HitTestBehavior.translucent,
             onTap: () {
-              if (_oldPwdController.text != '' &&
-                  _newPwdController.text != '' &&
+              if (_newPwdController.text != '' &&
                   _new2PwdController.text != '') {
-                if (_oldPwdController.text == _newPwdController.text) {
-                  CommonUtil.showMyToast("新密码与旧密码相同");
-                  return;
-                }
                 if (_newPwdController.text != _new2PwdController.text) {
                   CommonUtil.showMyToast("两次密码输入不一致");
+                  return;
+                }
+                if (_new2PwdController.text.length < 6 ||
+                    _new2PwdController.text.length > 12) {
+                  CommonUtil.showMyToast("密码长度规定为6-12位");
                   return;
                 }
                 _updatePassword();
@@ -137,8 +111,7 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
                   onChanged: (value) {
                     if (mounted) {
                       setState(() {
-                        if (_oldPwdController.text != '' &&
-                            _newPwdController.text != '' &&
+                        if (_newPwdController.text != '' &&
                             _new2PwdController.text != '') {
                           _submitStatus = true;
                         } else {

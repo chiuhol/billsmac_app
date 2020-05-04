@@ -197,4 +197,9 @@ class Address {
   static String staticByType(String chatroomId){
     return '$host/chatroom/$chatroomId/chatContent/staticByType';
   }
+
+  //获取用户统计数据
+  static String getUserStatic(){
+    return '$host/usersStatic';
+  }
 }

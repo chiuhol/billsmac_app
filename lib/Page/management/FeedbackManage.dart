@@ -145,6 +145,7 @@ class _FeedbackManageState extends State<FeedbackManage> {
   }
 
   List _feedbackLst = [];
+  List _feedbackLst2 = [];
 
   int _pageIndex = 1;
   String _query = "";
@@ -179,6 +180,7 @@ class _FeedbackManageState extends State<FeedbackManage> {
         if (mounted) {
           setState(() {
             _feedbackLst.addAll(response.data["data"]["feedback"]);
+            _feedbackLst2 = _feedbackLst;
             _done = true;
           });
         }
@@ -214,6 +216,9 @@ class _FeedbackManageState extends State<FeedbackManage> {
     _getFeedback();
   }
 
+  bool _undeal = false;//未处理状态
+  bool _isDeal = false;//已处理状态
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -223,26 +228,100 @@ class _FeedbackManageState extends State<FeedbackManage> {
             physics:
                 BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
             child: Column(children: <Widget>[
-              GestureDetector(
-                  key: _appMenuKey,
-                  onTap: () {
-                    setState(() {
-                      _isMenuShow = !_isMenuShow;
-                    });
-                    _showBaiduOverlayMenu(_isMenuShow);
-                  },
-                  child: Container(
-                      color: MyColors.white,
-                      padding: EdgeInsets.only(top: 10, bottom: 10, left: 10),
-                      child: Row(children: <Widget>[
-                        Text('分类', style: TextStyle(fontSize: MyFonts.f_16)),
-                        Container(width: 4),
-                        Icon(
-                            _isMenuShow
-                                ? Icons.arrow_drop_up
-                                : Icons.arrow_drop_down,
-                            size: 28)
-                      ]))),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  GestureDetector(
+                      key: _appMenuKey,
+                      onTap: () {
+                        setState(() {
+                          _isMenuShow = !_isMenuShow;
+                        });
+                        _showBaiduOverlayMenu(_isMenuShow);
+                      },
+                      child: Container(
+                          color: MyColors.white,
+                          padding: EdgeInsets.only(top: 10, bottom: 10, left: 10),
+                          child: Row(children: <Widget>[
+                            Text('分类', style: TextStyle(fontSize: MyFonts.f_16)),
+                            Container(width: 4),
+                            Icon(
+                                _isMenuShow
+                                    ? Icons.arrow_drop_up
+                                    : Icons.arrow_drop_down,
+                                size: 28)
+                          ]))),
+                  Row(children: <Widget>[
+                    GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTap: (){
+                        if(mounted){
+                          setState(() {
+                            _undeal = !_undeal;
+                            if(_isDeal){
+                              _isDeal = !_isDeal;
+                            }
+                            if(!_undeal&&!_isDeal){
+                              _feedbackLst = _feedbackLst2;
+                              return;
+                            }
+                            List _newLst = [];
+                            for(int i=0;i<_feedbackLst2.length;i++){
+                              if(_feedbackLst2[i]["status"] == false){
+                                _newLst.add(_feedbackLst2[i]);
+                              }
+                            }
+                            _feedbackLst = _newLst;
+                          });
+                        }
+                      },
+                      child: Container(
+                        width: 60,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: _undeal == false?MyColors.blue_3f:MyColors.orange_68,
+                          borderRadius: BorderRadius.all(Radius.circular(10))
+                        ),
+                        child: Center(child: Text("未处理",style: TextStyle(color: MyColors.white_fe,fontSize: MyFonts.f_12)))
+                      )
+                    ),
+                    SizedBox(width: 10),
+                    GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: (){
+                          if(mounted){
+                            setState(() {
+                              _isDeal = !_isDeal;
+                              if(_undeal){
+                                _undeal = !_undeal;
+                              }
+                              if(!_undeal&&!_isDeal){
+                                _feedbackLst = _feedbackLst2;
+                                return;
+                              }
+                              List _newLst = [];
+                              for(int i=0;i<_feedbackLst2.length;i++){
+                                if(_feedbackLst2[i]["status"] == true){
+                                  _newLst.add(_feedbackLst2[i]);
+                                }
+                              }
+                              _feedbackLst = _newLst;
+                            });
+                          }
+                        },
+                        child: Container(
+                            width: 60,
+                            height: 30,
+                            decoration: BoxDecoration(
+                                color: _isDeal == false?MyColors.blue_3f:MyColors.orange_68,
+                                borderRadius: BorderRadius.all(Radius.circular(10))
+                            ),
+                            child: Center(child: Text("已处理",style: TextStyle(color: MyColors.white_fe,fontSize: MyFonts.f_12)))
+                        )
+                    ),SizedBox(width: 10)
+                  ])
+                ]
+              ),
               SizedBox(height: 10),
               _done == false?Center(child: Text("加载中......")):
               _feedbackLst.length == 0

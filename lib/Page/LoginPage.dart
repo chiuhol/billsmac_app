@@ -90,6 +90,7 @@ class _LoginPageState extends State<LoginPage>
             });
             if (response.data["status"] == 200) {
               if(response.data["data"]["manager"]["status"]){
+                LocalStorage.save("_id", response.data["data"]["manager"]["_id"]??"");
                 LocalStorage.save("jobNum", response.data["data"]["manager"]["jobNum"]??"");
                 LocalStorage.save("account", response.data["data"]["manager"]["account"]??"");
                 Navigator.pushReplacementNamed(context, '/ManagerMain_Page');

@@ -296,4 +296,13 @@ class CommonUtil {
       b != 200 ? b : Random.secure().nextInt(b),
     );
   }
+
+  //数组倒置
+  static reversePeople (array) {
+    List newArr = [];
+    for (int i = array.length - 1; i >= 0; i--) {
+      newArr.add(array[i]);
+    }
+    return newArr;
+  }
 }

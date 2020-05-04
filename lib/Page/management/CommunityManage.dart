@@ -1,4 +1,5 @@
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Page/community/DetailPage.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -423,8 +424,8 @@ class _CommunityManageState extends State<CommunityManage> {
               behavior: HitTestBehavior.translucent,
               onTap: () {
                 if (_article["_id"] != null && _article["_id"] != '') {
-//                CommonUtil.openPage(
-//                    context, DetailPage(articleId: _article["_id"]));
+                CommonUtil.openPage(
+                    context, DetailPage(articleId: _article["_id"]));
                 } else {
                   CommonUtil.showMyToast("请刷新页面");
                 }

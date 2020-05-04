@@ -8,6 +8,7 @@ import 'management/FeedbackManage.dart';
 import 'management/MainPage.dart';
 import 'management/ManagerManage.dart';
 import 'management/SystemManage.dart';
+import 'management/UpdatePwd.dart';
 import 'management/UsersPage.dart';
 
 ///Author:chiuhol
@@ -72,11 +73,16 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
                 borderRadius: BorderRadius.all(Radius.circular(5.0))),
           ),
           new ListTile(
-              title: new Text('个人中心'),
+              title: new Text('修改密码'),
               trailing: new Icon(Icons.arrow_right),
               onTap: () {
                 Navigator.of(context).pop();
-                Navigator.pushNamed(context, '/LifecyclePage');
+                if(mounted){
+                  setState(() {
+                    _title = "修改密码";
+                    _idx = 6;
+                  });
+                }
               }),
           new Divider(),
           new ListTile(
@@ -102,6 +108,8 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
         return FeedbackManage();
       } else if (_idx == 5) {
         return SystemManage();
+      } else if (_idx == 6) {
+        return UpdatePwd();
       } else {
         return MainPage();
       }
