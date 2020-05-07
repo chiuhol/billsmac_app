@@ -25,6 +25,9 @@ class _SearchPageState extends State<SearchPage> {
   bool _cleanIcon = false; //清除内容x是否显示
   bool _isSearch = false; //是否确定搜索
 
+  double _acount = 0;
+  String _amountType = "";
+
   //根据某个关键词搜索
   @protected
   _getChatContent(String q) async {
@@ -51,6 +54,11 @@ class _SearchPageState extends State<SearchPage> {
                 setState(() {
                   _isSearch = true;
                 });
+              }
+            }else{
+              for(int i=0;i<_chatContentLst.length;i++){
+                _acount += double.parse(_chatContentLst[i]["rightcontent"]["amount"]);
+                _amountType = _chatContentLst[i]["rightcontent"]["amountType"];
               }
             }
           });
@@ -196,7 +204,7 @@ class _SearchPageState extends State<SearchPage> {
             children: <Widget>[
               Padding(
                   padding: EdgeInsets.only(top: 8, bottom: 8),
-                  child: Text("支出：",
+                  child: Text("${_amountType=="expend"?"支出":"收入"}：${_acount.toString()??""}",
                       style: TextStyle(
                           color: MyColors.grey_cb, fontSize: MyFonts.f_16))),
               Container(

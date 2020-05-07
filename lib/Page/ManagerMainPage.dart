@@ -4,6 +4,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import 'LoginPage.dart';
 import 'management/CommunityManage.dart';
+import 'management/CorpusManage.dart';
 import 'management/FeedbackManage.dart';
 import 'management/MainPage.dart';
 import 'management/ManagerManage.dart';
@@ -80,7 +81,7 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
                 if(mounted){
                   setState(() {
                     _title = "修改密码";
-                    _idx = 6;
+                    _idx = 7;
                   });
                 }
               }),
@@ -105,10 +106,12 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
       } else if (_idx == 3) {
         return ManagerManage();
       } else if (_idx == 4) {
-        return FeedbackManage();
+        return CorpusManage();
       } else if (_idx == 5) {
-        return SystemManage();
+        return FeedbackManage();
       } else if (_idx == 6) {
+        return SystemManage();
+      } else if (_idx == 7) {
         return UpdatePwd();
       } else {
         return MainPage();
@@ -217,6 +220,19 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
               },
             ),
             SpeedDialChild(
+                child: Icon(Icons.textsms),
+                backgroundColor: Colors.yellowAccent,
+                label: '语料包管理',
+                labelStyle: TextStyle(fontSize: 18.0),
+                onTap: () {
+                  if (mounted) {
+                    setState(() {
+                      _title = "语料包管理";
+                      _idx = 4;
+                    });
+                  }
+                }),
+            SpeedDialChild(
                 child: Icon(Icons.library_books),
                 backgroundColor: Colors.purple,
                 label: '处理反馈',
@@ -225,7 +241,7 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
                   if (mounted) {
                     setState(() {
                       _title = "处理反馈";
-                      _idx = 4;
+                      _idx = 5;
                     });
                   }
                 }),
@@ -238,7 +254,7 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
                   if (mounted) {
                     setState(() {
                       _title = "系统信息";
-                      _idx = 5;
+                      _idx = 6;
                     });
                   }
                 })

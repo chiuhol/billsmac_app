@@ -31,20 +31,25 @@ class _CalendarMainPageState extends State<CalendarMainPage>
 
   @protected
   _getData() {
-    var res = widget.chatContentLst;
     if (mounted) {
       setState(() {
         final _selectedDay = DateTime.now();
-        res.forEach((items) {
-          print(CommonUtil.getDuration(items["createdAt"]));
-          _events.addAll({
-            _selectedDay.subtract(
-                Duration(days: CommonUtil.getDuration(items["createdAt"]))): [
-              items["rightcontent"]
-            ]
-          });
-        });
-        print(_events);
+        List _content = widget.chatContentLst;
+        print(_content);
+//        for (int i = 0; i < _content.length; i++) {
+//          int day = CommonUtil.getDuration(_content[i]["createdAt"]);
+//          _events[_selectedDay] = ['a'];
+////          _events = {
+////            _selectedDay.subtract(Duration(days: 30)): ['Event A0', 'Event B0', 'Event C0'],
+////            _selectedDay.subtract(Duration(
+////                days: CommonUtil.getDuration(
+////                    widget.chatContentLst[i]["createdAt"]))):[widget.chatContentLst[i]["rightcontent"]]
+////          };
+//        }
+        Map _a;
+        _a[DateTime.now()] = "1";
+//        _events[_selectedDay] = ['a'];
+        print(_a);
 
 //        _events = {
 //          _selectedDay.subtract(Duration(days: 30)): ['Event A0', 'Event B0', 'Event C0'],
@@ -63,6 +68,7 @@ class _CalendarMainPageState extends State<CalendarMainPage>
 //          _selectedDay.add(Duration(days: 22)): ['Event A13', 'Event B13'],
 //          _selectedDay.add(Duration(days: 26)): ['Event A14', 'Event B14', 'Event C14'],
 //        };
+
 
         _selectedEvents = _events[_selectedDay] ?? [];
         _calendarController = CalendarController();

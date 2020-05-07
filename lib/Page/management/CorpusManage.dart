@@ -1,4 +1,5 @@
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -6,18 +7,17 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 ///Author:chiuhol
 ///2020-4-23
 
-class ManagerManage extends StatefulWidget {
+class CorpusManage extends StatefulWidget {
   @override
-  _ManagerManageState createState() => _ManagerManageState();
+  _CorpusManageState createState() => _CorpusManageState();
 }
 
-class _ManagerManageState extends State<ManagerManage> {
+class _CorpusManageState extends State<CorpusManage> {
   bool _done = false;
-  List _managerLst = [];
+  List _corpusLst = [];
   TextEditingController _searchController = TextEditingController();
-  TextEditingController _jobNumController = TextEditingController();
-  TextEditingController _accountController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
+  TextEditingController _typeController = TextEditingController();
+  TextEditingController _responseController = TextEditingController();
   bool _cleanStatus = false;
   String _query = "";
   int _pageIndex = 1;
@@ -27,49 +27,39 @@ class _ManagerManageState extends State<ManagerManage> {
 
   void _onRefresh() async {
     _pageIndex = 1;
-    _managerLst = [];
-    _getManagers();
+    _corpusLst = [];
+    _getCorpus(_query);
     _refreshController.refreshCompleted();
   }
 
   void _onLoading() async {
     _pageIndex++;
-    _getManagers();
+    _getCorpus(_query);
     _refreshController.loadComplete();
   }
 
   @protected
-  _getManagers() async {
+  _getCorpus(_query) async {
+    String _manageId = await LocalStorage.get("_id").then((result) {
+      return result;
+    });
     try {
       BaseOptions options = BaseOptions(
           method: "get",
-          queryParameters: {"q": _query, "page": _pageIndex, "per_Page": 10});
+          queryParameters: {"q": "","queryContent":_query,"page": _pageIndex, "per_Page": 10});
       var dio = new Dio(options);
-      var response = await dio.get(Address.getManagers());
+      var response = await dio.get(Address.getCorpus(_manageId));
       print(response.data.toString());
       if (response.data["status"] == 200) {
         if (mounted) {
           setState(() {
-            _managerLst.addAll(response.data["data"]["managers"]);
+            _corpusLst.addAll(response.data["data"]["corpus"]);
             _done = true;
           });
         }
       }
     } catch (err) {
-      CommonUtil.showMyToast("系统开小差了~");
-    }
-  }
-
-  @protected
-  _updateManagers(id, status) async {
-    try {
-      BaseOptions options = BaseOptions(method: "patch");
-      var dio = new Dio(options);
-      var response =
-          await dio.patch(Address.updateManagers(id), data: {"status": status});
-      print(response.data.toString());
-      if (response.data["status"] == 200) {}
-    } catch (err) {
+      print(err.toString());
       CommonUtil.showMyToast("系统开小差了~");
     }
   }
@@ -79,37 +69,53 @@ class _ManagerManageState extends State<ManagerManage> {
     // TODO: implement initState
     super.initState();
 
-    _getManagers();
+    _getCorpus(_query);
   }
 
-  _addManager() async {
+  _addCorpus() async {
+    String _manageId = await LocalStorage.get("_id").then((result) {
+      return result;
+    });
     try {
       BaseOptions options = BaseOptions(method: "post");
       var dio = new Dio(options);
-      var response = await dio.post(Address.addManagers(), data: {
-        "jobNum": _jobNumController.text,
-        "account": _accountController.text,
-        "password": _passwordController.text
+      var response = await dio.post(Address.addCorpus(_manageId), data: {
+        "content": _typeController.text,
+        "response": _responseController.text
       });
       print(response.data.toString());
       if (response.data["status"] == 200) {
         if (mounted) {
           setState(() {
-            _managerLst.insert(0,response.data["data"]["manager"]);
+            _corpusLst.insert(0,response.data["data"]["corpus"]);
           });
         }
       }
     } catch (err) {
       print(err.toString());
-      if(err.toString() == "DioError [DioErrorType.RESPONSE]: Http status error [409]"){
-        CommonUtil.showMyToast("该账号已存在");
-        return;
-      }
       CommonUtil.showMyToast("系统开小差了~");
     }
   }
 
-  _addManagerDialog() async {
+  @protected
+  _updateCorpus(id, status) async {
+    String _manageId = await LocalStorage.get("_id").then((result) {
+      return result;
+    });
+    try {
+      BaseOptions options = BaseOptions(method: "patch");
+      var dio = new Dio(options);
+      var response =
+      await dio.patch(Address.updateCorpus(_manageId,id), data: {"status": status});
+      print(response.data.toString());
+      if (response.data["status"] == 200) {}
+    } catch (err) {
+      print(err.toString());
+      CommonUtil.showMyToast("系统开小差了~");
+    }
+  }
+
+  _addCorpusDialog() async {
     await showDialog(
         context: context,
         barrierDismissible: true,
@@ -117,7 +123,7 @@ class _ManagerManageState extends State<ManagerManage> {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             title: Center(
-                child: Text('添加管理员',
+                child: Text('添加语料包',
                     style: TextStyle(
                         color: MyColors.black_33, fontSize: MyFonts.f_16))),
             contentPadding: const EdgeInsets.all(10.0),
@@ -126,17 +132,17 @@ class _ManagerManageState extends State<ManagerManage> {
               SizedBox(height: 13.5),
               Column(children: <Widget>[
                 Row(children: <Widget>[
-                  Text("工号：", style: TextStyle(fontSize: MyFonts.f_16)),
+                  Text("类型：", style: TextStyle(fontSize: MyFonts.f_16)),
                   Expanded(
                       child: TextField(
                           maxLines: 1,
-                          controller: _jobNumController,
-                          keyboardType: TextInputType.phone,
+                          controller: _typeController,
+                          keyboardType: TextInputType.text,
                           cursorColor: MyColors.green_8d,
                           style: TextStyle(
                               color: MyColors.green_8d, fontSize: MyFonts.f_18),
                           decoration: InputDecoration(
-                              hintText: '请输入工号',
+                              hintText: '请输入类型',
                               hintStyle: TextStyle(
                                 fontSize: MyFonts.f_16,
                                 color: MyColors.red_5c,
@@ -146,41 +152,24 @@ class _ManagerManageState extends State<ManagerManage> {
                 Padding(
                     padding: EdgeInsets.only(top: 18, bottom: 18),
                     child: Row(children: <Widget>[
-                      Text("账号：", style: TextStyle(fontSize: MyFonts.f_16)),
+                      Text("回复：", style: TextStyle(fontSize: MyFonts.f_16)),
                       Expanded(
                           child: TextField(
                               maxLines: 1,
-                              controller: _accountController,
-                              keyboardType: TextInputType.phone,
+                              controller: _responseController,
+                              keyboardType: TextInputType.text,
                               cursorColor: MyColors.green_8d,
                               style: TextStyle(
                                   color: MyColors.green_8d,
                                   fontSize: MyFonts.f_18),
                               decoration: InputDecoration(
-                                  hintText: '请输入账号',
+                                  hintText: '请输入回复内容',
                                   hintStyle: TextStyle(
                                     fontSize: MyFonts.f_16,
                                     color: MyColors.red_5c,
                                   ),
                                   border: InputBorder.none)))
-                    ])),
-                Row(children: <Widget>[
-                  Text("密码：", style: TextStyle(fontSize: MyFonts.f_16)),
-                  Expanded(
-                      child: TextField(
-                          maxLines: 1,
-                          controller: _passwordController,
-                          cursorColor: MyColors.green_8d,
-                          style: TextStyle(
-                              color: MyColors.green_8d, fontSize: MyFonts.f_18),
-                          decoration: InputDecoration(
-                              hintText: '请输入密码',
-                              hintStyle: TextStyle(
-                                fontSize: MyFonts.f_16,
-                                color: MyColors.red_5c,
-                              ),
-                              border: InputBorder.none)))
-                ])
+                    ]))
               ]),
               SizedBox(height: 13.5),
               SeparatorWidget(),
@@ -196,33 +185,20 @@ class _ManagerManageState extends State<ManagerManage> {
                               color: MyColors.green_8d,
                               fontSize: MyFonts.f_14)),
                       onPressed: () {
-                        if (_jobNumController.text == '') {
-                          CommonUtil.showMyToast("请输入工号");
+                        if (_typeController.text == '') {
+                          CommonUtil.showMyToast("请输入类型");
                           return;
                         }
-                        if (_accountController.text == '') {
-                          CommonUtil.showMyToast("请输入账号");
+                        if (_responseController.text == '') {
+                          CommonUtil.showMyToast("请输入回复内容");
                           return;
                         }
-                        if (_passwordController.text == '') {
-                          CommonUtil.showMyToast("请输入密码");
-                          return;
-                        }
-                        if (_jobNumController.text.length > 6) {
-                          CommonUtil.showMyToast("工号长度规定为1-6");
-                          return;
-                        }
-                        if (_accountController.text.length > 12) {
-                          CommonUtil.showMyToast("账号长度规定为1-12");
-                          return;
-                        }
-                        if (_passwordController.text.length < 6 ||
-                            _passwordController.text.length > 12) {
-                          CommonUtil.showMyToast("密码长度规定为6-12");
+                        if (_responseController.text.length > 12) {
+                          CommonUtil.showMyToast("回复内容长度规定为1-12");
                           return;
                         }
                         Navigator.pop(context);
-                        _addManager();
+                        _addCorpus();
                       }))
             ]));
   }
@@ -239,7 +215,7 @@ class _ManagerManageState extends State<ManagerManage> {
               GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onTap: () {
-                    _addManagerDialog();
+                    _addCorpusDialog();
                   },
                   child: Icon(Icons.add)),
               Expanded(
@@ -277,7 +253,7 @@ class _ManagerManageState extends State<ManagerManage> {
                                         color: MyColors.green_8d,
                                         fontSize: MyFonts.f_18),
                                     decoration: InputDecoration(
-                                        hintText: '请输入搜索内容(工号)',
+                                        hintText: '请输入搜索内容(类型)',
                                         hintStyle: TextStyle(
                                           fontSize: MyFonts.f_16,
                                           color: MyColors.red_5c,
@@ -304,18 +280,18 @@ class _ManagerManageState extends State<ManagerManage> {
                   onTap: () {
                     if (mounted) {
                       setState(() {
-                        _managerLst = [];
+                        _corpusLst = [];
                         _query = _searchController.text;
                       });
                     }
-                    _getManagers();
+                    _getCorpus(_query);
                   },
                   child: Text('搜索'))
             ])),
         _done == false
             ? Center(child: Text("加载中......"))
-            : _managerLst.length == 0
-                ? Center(child: Text("暂无管理员信息~"))
+            : _corpusLst.length == 0
+                ? Center(child: Text("暂无语料包信息~"))
                 : Container(
                     width: double.infinity,
                     height: 600,
@@ -344,14 +320,14 @@ class _ManagerManageState extends State<ManagerManage> {
                         child: ListView.builder(
                             physics: NeverScrollableScrollPhysics(),
                             itemBuilder: itemBuilder,
-                            itemCount: _managerLst.length,
+                            itemCount: _corpusLst.length,
                             shrinkWrap: true)))
       ]))),
     );
   }
 
   Widget itemBuilder(BuildContext context, int index) {
-    Map _manager = _managerLst[index];
+    Map _corpus = _corpusLst[index];
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
         Widget>[
       Container(
@@ -363,18 +339,18 @@ class _ManagerManageState extends State<ManagerManage> {
                 child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Text("工号", style: TextStyle(fontSize: MyFonts.f_16)),
-                      Text(_manager["jobNum"] ?? "暂无内容",
+                      Text("类型", style: TextStyle(fontSize: MyFonts.f_16)),
+                      Text(_corpus["content"] ?? "暂无内容",
                           style: TextStyle(fontSize: MyFonts.f_16))
                     ])),
             Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Text("账号",
+                  Text("回复",
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: MyFonts.f_16)),
-                  Text(_manager["account"] ?? "",
+                  Text(_corpus["response"] ?? "",
                       style: TextStyle(fontSize: MyFonts.f_16))
                 ]),
             Row(
@@ -383,11 +359,11 @@ class _ManagerManageState extends State<ManagerManage> {
                   Text("状态", style: TextStyle(fontSize: MyFonts.f_16)),
                   Switch(
                       activeColor: MyColors.green_8d,
-                      value: _manager["status"] ?? false,
+                      value: _corpus["status"] ?? false,
                       onChanged: (value) {
                         setState(() {
-                          _updateManagers(_manager["_id"], value);
-                          _manager["status"] = value;
+                          _corpus["status"] = value;
+                          _updateCorpus(_corpus["_id"], value);
                         });
                       })
                 ]),
@@ -398,7 +374,7 @@ class _ManagerManageState extends State<ManagerManage> {
                     children: <Widget>[
                       Text("创建时间", style: TextStyle(fontSize: MyFonts.f_16)),
                       Text(
-                          _manager["createdAt"].toString().substring(0, 10) ??
+                          _corpus["createdAt"].toString().substring(0, 10) ??
                               "",
                           style: TextStyle(fontSize: MyFonts.f_16))
                     ]))
