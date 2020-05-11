@@ -176,9 +176,13 @@ class _MineMainPageState extends State<MineMainPage> {
                                 icon: 0xe61e,
                                 rout: SettingMainPage()),
                             SeparatorWidget(),
-                            SubprojectWidget(title: '分享给好友', icon: 0xe86c),
+                            SubprojectWidget(title: '分享给好友', icon: 0xe86c,function: (){
+                              CommonUtil.showMyToast("暂未开放");
+                            }),
                             SeparatorWidget(),
-                            SubprojectWidget(title: '个性化开屏', icon: 0xe6ac)
+                            SubprojectWidget(title: '个性化开屏', icon: 0xe6ac,function: (){
+                              CommonUtil.showMyToast("暂未开放");
+                            })
                           ]))
                     ]))));
   }

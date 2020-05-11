@@ -23,7 +23,7 @@ class _CommunityMainPageState extends State<CommunityMainPage> {
     new Tab(text: '推荐'),
     new Tab(text: '热搜')
   ];
-  String _hotSearch = '开窗通风会传播病毒吗';
+  String _hotSearch = '请输入您要搜索的内容';
 
   @override
   void initState() {

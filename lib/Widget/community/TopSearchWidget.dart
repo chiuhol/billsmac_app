@@ -86,7 +86,7 @@ class _TopSearchWidgetState extends State<TopSearchWidget>
         color: MyColors.white_fe,
         child: AnimationLimiter(
             child: Column(children: <Widget>[
-          Container(width: double.infinity, height: 30, child: topicListView()),
+//          Container(width: double.infinity, height: 30, child: topicListView()),
           Expanded(
               child: SmartRefresher(
                   controller: _refreshController,

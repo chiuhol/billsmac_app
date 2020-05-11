@@ -18,6 +18,10 @@ class SubprojectWidget extends StatelessWidget {
     return GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: function != null?function:() {
+          if(title == "好评鼓励" || title == "微信" || title == "QQ"){
+            CommonUtil.showMyToast("暂未开放");
+            return;
+          }
           if(title == "联系我们"){
             _service.call(subTitle);
             return;

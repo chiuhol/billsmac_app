@@ -308,7 +308,7 @@ class _TeachMePageState extends State<TeachMePage> {
                 )
             ),
             Padding(
-              padding: EdgeInsets.only(left: 20,right: 20),
+              padding: EdgeInsets.only(left: 20,right: 20,bottom: 20),
               child: Container(
                   height: 45.0,
                   margin: EdgeInsets.only(top: 40.0),

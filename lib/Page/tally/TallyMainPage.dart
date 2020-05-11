@@ -231,7 +231,7 @@ class _TallyMainPageState extends State<TallyMainPage>
     });
     if(mounted){
       setState(() {
-        _avatar = _avatarUrl;
+        _avatar = "116.62.141.151$_avatarUrl";
       });
     }
   }
