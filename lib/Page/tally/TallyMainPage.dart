@@ -189,7 +189,7 @@ class _TallyMainPageState extends State<TallyMainPage>
   }
 
   @protected
-  _saveChatContent(String typeStr, String amount) async {
+  _saveChatContent(String typeStr, String amount,String amountType) async {
     String _chatroomId = await LocalStorage.get("chatroomId").then((result) {
       return result;
     });
@@ -206,7 +206,7 @@ class _TallyMainPageState extends State<TallyMainPage>
         "chatroomId": _chatroomId,
         "rightcontent": {
           "typeStr": typeStr,
-          "amountType": "expend",
+          "amountType": amountType,
           "amount": amount,
           "remark": ""
         }
@@ -232,6 +232,8 @@ class _TallyMainPageState extends State<TallyMainPage>
     if(mounted){
       setState(() {
         _avatar = "116.62.141.151$_avatarUrl";
+        print(_avatarUrl);
+        print(_avatar);
       });
     }
   }
@@ -262,7 +264,7 @@ class _TallyMainPageState extends State<TallyMainPage>
           return BottomSheet(_categoryLst, _tabController);
         }).then((value) {
       if (value != null) {
-        _saveChatContent(value["type"], value["amount"]);
+        _saveChatContent(value["type"], value["amount"],value["amountType"]);
       }
     });
   }
@@ -537,6 +539,7 @@ typedef clickCallback = void Function(String value);
 
 class _BottomSheetState extends State<BottomSheet> {
   String _type = "早餐";
+  String _tallyType = "expend";//支出或收入
   String _account = "";
   bool _inputStatus = false;
   TextEditingController controller;
@@ -647,7 +650,7 @@ class _BottomSheetState extends State<BottomSheet> {
                           return;
                         }
                         Navigator.of(context)
-                            .pop({"type": _type, "amount": _account});
+                            .pop({"type": _type, "amount": _account,"amountType":_tallyType});
                       } else {
                         _account = value;
                       }
@@ -664,7 +667,9 @@ class _BottomSheetState extends State<BottomSheet> {
         idx: i,
         onClick: (value) {
           setState(() {
-            _type = value;
+            List _res = value.split(",");
+            _type = _res[0];
+            _tallyType = _res[1];
           });
         },
       );
@@ -686,110 +691,110 @@ class TallyTypeList extends StatefulWidget {
 
 class _TallyTypeListState extends State<TallyTypeList> {
   List _hotLst = [
-    {"iconName": 0xe66d, "typeName": "早餐"},
-    {"iconName": 0xe62c, "typeName": "午餐"},
-    {"iconName": 0xe6ec, "typeName": "晚餐"}
+    {"iconName": 0xe66d, "typeName": "早餐","type":"expend"},
+    {"iconName": 0xe62c, "typeName": "午餐","type":"expend"},
+    {"iconName": 0xe6ec, "typeName": "晚餐","type":"expend"}
   ]; //热门
   List _incomeLst = [
-    {"iconName": 0xe651, "typeName": "工资"},
-    {"iconName": 0xe66d, "typeName": "收入"},
-    {"iconName": 0xe612, "typeName": "投资收入"},
-    {"iconName": 0xe8c6, "typeName": "兼职外快"},
-    {"iconName": 0xe678, "typeName": "生活费"},
-    {"iconName": 0xe65b, "typeName": "红包"},
-    {"iconName": 0xe51b, "typeName": "二手闲置"},
-    {"iconName": 0xe521, "typeName": "借入"},
-    {"iconName": 0xe602, "typeName": "报销"},
+    {"iconName": 0xe651, "typeName": "工资","type":"income"},
+    {"iconName": 0xe66d, "typeName": "收入","type":"income"},
+    {"iconName": 0xe612, "typeName": "投资收入","type":"income"},
+    {"iconName": 0xe8c6, "typeName": "兼职外快","type":"income"},
+    {"iconName": 0xe678, "typeName": "生活费","type":"income"},
+    {"iconName": 0xe65b, "typeName": "红包","type":"income"},
+    {"iconName": 0xe51b, "typeName": "二手闲置","type":"income"},
+    {"iconName": 0xe521, "typeName": "借入","type":"income"},
+    {"iconName": 0xe602, "typeName": "报销","type":"income"},
   ]; //收
   List _eatLst = [
-    {"iconName": 0xe66d, "typeName": "早餐"},
-    {"iconName": 0xe62c, "typeName": "午餐"},
-    {"iconName": 0xe6ec, "typeName": "晚餐"},
-    {"iconName": 0xe622, "typeName": "零食"},
-    {"iconName": 0xe60b, "typeName": "饮料"},
-    {"iconName": 0xe638, "typeName": "买菜"},
-    {"iconName": 0xe633, "typeName": "酒水"},
-    {"iconName": 0xe615, "typeName": "水果"},
-    {"iconName": 0xe6c7, "typeName": "香烟"},
+    {"iconName": 0xe66d, "typeName": "早餐","type":"expend"},
+    {"iconName": 0xe62c, "typeName": "午餐","type":"expend"},
+    {"iconName": 0xe6ec, "typeName": "晚餐","type":"expend"},
+    {"iconName": 0xe622, "typeName": "零食","type":"expend"},
+    {"iconName": 0xe60b, "typeName": "饮料","type":"expend"},
+    {"iconName": 0xe638, "typeName": "买菜","type":"expend"},
+    {"iconName": 0xe633, "typeName": "酒水","type":"expend"},
+    {"iconName": 0xe615, "typeName": "水果","type":"expend"},
+    {"iconName": 0xe6c7, "typeName": "香烟","type":"expend"},
   ]; //食
   List _buyLst = [
-    {"iconName": 0xe679, "typeName": "购物"},
-    {"iconName": 0xe610, "typeName": "生活用品"},
-    {"iconName": 0xe60a, "typeName": "服饰"},
-    {"iconName": 0xe68f, "typeName": "包包"},
-    {"iconName": 0xe623, "typeName": "鞋子"},
-    {"iconName": 0xe5a0, "typeName": "淘宝"},
-    {"iconName": 0xe634, "typeName": "护肤彩妆"},
-    {"iconName": 0xe606, "typeName": "饰品"},
-    {"iconName": 0xe75d, "typeName": "美容美甲"},
+    {"iconName": 0xe679, "typeName": "购物","type":"expend"},
+    {"iconName": 0xe610, "typeName": "生活用品","type":"expend"},
+    {"iconName": 0xe60a, "typeName": "服饰","type":"expend"},
+    {"iconName": 0xe68f, "typeName": "包包","type":"expend"},
+    {"iconName": 0xe623, "typeName": "鞋子","type":"expend"},
+    {"iconName": 0xe5a0, "typeName": "淘宝","type":"expend"},
+    {"iconName": 0xe634, "typeName": "护肤彩妆","type":"expend"},
+    {"iconName": 0xe606, "typeName": "饰品","type":"expend"},
+    {"iconName": 0xe75d, "typeName": "美容美甲","type":"expend"},
   ]; //购
   List _walkLst = [
-    {"iconName": 0xe67b, "typeName": "交通"},
-    {"iconName": 0xe504, "typeName": "加油"},
-    {"iconName": 0xe5b6, "typeName": "停车费"},
-    {"iconName": 0xe501, "typeName": "打车"},
-    {"iconName": 0xe686, "typeName": "地铁"},
-    {"iconName": 0xe68b, "typeName": "火车"},
-    {"iconName": 0xe60e, "typeName": "公交车"},
-    {"iconName": 0xe631, "typeName": "机票"},
-    {"iconName": 0xe51d, "typeName": "修车养车"},
+    {"iconName": 0xe67b, "typeName": "交通","type":"expend"},
+    {"iconName": 0xe504, "typeName": "加油","type":"expend"},
+    {"iconName": 0xe5b6, "typeName": "停车费","type":"expend"},
+    {"iconName": 0xe501, "typeName": "打车","type":"expend"},
+    {"iconName": 0xe686, "typeName": "地铁","type":"expend"},
+    {"iconName": 0xe68b, "typeName": "火车","type":"expend"},
+    {"iconName": 0xe60e, "typeName": "公交车","type":"expend"},
+    {"iconName": 0xe631, "typeName": "机票","type":"expend"},
+    {"iconName": 0xe51d, "typeName": "修车养车","type":"expend"},
   ]; //行
   List _babyLst = [
-    {"iconName": 0xe691, "typeName": "教育"},
-    {"iconName": 0xe509, "typeName": "学习"},
-    {"iconName": 0xe63d, "typeName": "书籍"},
-    {"iconName": 0xe647, "typeName": "文具"},
-    {"iconName": 0xe665, "typeName": "学费"},
-    {"iconName": 0xe732, "typeName": "考试"},
-    {"iconName": 0xe506, "typeName": "培训"},
-    {"iconName": 0xe62a, "typeName": "辅导班"},
-    {"iconName": 0xe617, "typeName": "育儿"},
+    {"iconName": 0xe691, "typeName": "教育","type":"expend"},
+    {"iconName": 0xe509, "typeName": "学习","type":"expend"},
+    {"iconName": 0xe63d, "typeName": "书籍","type":"expend"},
+    {"iconName": 0xe647, "typeName": "文具","type":"expend"},
+    {"iconName": 0xe665, "typeName": "学费","type":"expend"},
+    {"iconName": 0xe732, "typeName": "考试","type":"expend"},
+    {"iconName": 0xe506, "typeName": "培训","type":"expend"},
+    {"iconName": 0xe62a, "typeName": "辅导班","type":"expend"},
+    {"iconName": 0xe617, "typeName": "育儿","type":"expend"},
   ]; //育
   List _happyLst = [
-    {"iconName": 0xe775, "typeName": "娱乐"},
-    {"iconName": 0xe6ba, "typeName": "电影"},
-    {"iconName": 0xe62c, "typeName": "游戏"},
-    {"iconName": 0xe624, "typeName": "追星"},
-    {"iconName": 0xe603, "typeName": "KTV"},
-    {"iconName": 0xe605, "typeName": "酒吧"},
-    {"iconName": 0xe68c, "typeName": "运动健身"},
-    {"iconName": 0xe639, "typeName": "旅游"},
-    {"iconName": 0xe662, "typeName": "洗浴"},
+    {"iconName": 0xe775, "typeName": "娱乐","type":"expend"},
+    {"iconName": 0xe6ba, "typeName": "电影","type":"expend"},
+    {"iconName": 0xe62c, "typeName": "游戏","type":"expend"},
+    {"iconName": 0xe624, "typeName": "追星","type":"expend"},
+    {"iconName": 0xe603, "typeName": "KTV","type":"expend"},
+    {"iconName": 0xe605, "typeName": "酒吧","type":"expend"},
+    {"iconName": 0xe68c, "typeName": "运动健身","type":"expend"},
+    {"iconName": 0xe639, "typeName": "旅游","type":"expend"},
+    {"iconName": 0xe662, "typeName": "洗浴","type":"expend"},
   ]; //乐
   List _emotionLst = [
-    {"iconName": 0xe65b, "typeName": "红包"},
-    {"iconName": 0xe502, "typeName": "礼物"},
-    {"iconName": 0xe619, "typeName": "孝敬"},
-    {"iconName": 0xe779, "typeName": "打赏"},
-    {"iconName": 0xe610, "typeName": "借出"},
+    {"iconName": 0xe65b, "typeName": "红包","type":"expend"},
+    {"iconName": 0xe502, "typeName": "礼物","type":"expend"},
+    {"iconName": 0xe619, "typeName": "孝敬","type":"expend"},
+    {"iconName": 0xe779, "typeName": "打赏","type":"expend"},
+    {"iconName": 0xe610, "typeName": "借出","type":"expend"},
   ]; //情
   List _towardLst = [
-    {"iconName": 0xe628, "typeName": "房租"},
-    {"iconName": 0xe682, "typeName": "房贷"},
-    {"iconName": 0xe640, "typeName": "水费"},
-    {"iconName": 0xe518, "typeName": "电费"},
-    {"iconName": 0xe63f, "typeName": "燃气费"},
-    {"iconName": 0xe615, "typeName": "物业费"},
-    {"iconName": 0xe657, "typeName": "网络费"},
-    {"iconName": 0xe6eb, "typeName": "话费"},
-    {"iconName": 0xe621, "typeName": "家居"},
+    {"iconName": 0xe628, "typeName": "房租","type":"expend"},
+    {"iconName": 0xe682, "typeName": "房贷","type":"expend"},
+    {"iconName": 0xe640, "typeName": "水费","type":"expend"},
+    {"iconName": 0xe518, "typeName": "电费","type":"expend"},
+    {"iconName": 0xe63f, "typeName": "燃气费","type":"expend"},
+    {"iconName": 0xe615, "typeName": "物业费","type":"expend"},
+    {"iconName": 0xe657, "typeName": "网络费","type":"expend"},
+    {"iconName": 0xe6eb, "typeName": "话费","type":"expend"},
+    {"iconName": 0xe621, "typeName": "家居","type":"expend"},
   ]; //住
   List _medicineLst = [
-    {"iconName": 0xe62d, "typeName": "药品"},
-    {"iconName": 0xe6a7, "typeName": "医院"},
-    {"iconName": 0xe609, "typeName": "养生保健"},
+    {"iconName": 0xe62d, "typeName": "药品","type":"expend"},
+    {"iconName": 0xe6a7, "typeName": "医院","type":"expend"},
+    {"iconName": 0xe609, "typeName": "养生保健","type":"expend"},
   ]; //医
   List _putintoLst = [
-    {"iconName": 0xe653, "typeName": "网贷"},
-    {"iconName": 0xe645, "typeName": "基金"},
-    {"iconName": 0xe641, "typeName": "股票"},
-    {"iconName": 0xe60b, "typeName": "银行理财"},
-    {"iconName": 0xe62c, "typeName": "投资亏损"},
+    {"iconName": 0xe653, "typeName": "网贷","type":"expend"},
+    {"iconName": 0xe645, "typeName": "基金","type":"expend"},
+    {"iconName": 0xe641, "typeName": "股票","type":"expend"},
+    {"iconName": 0xe60b, "typeName": "银行理财","type":"expend"},
+    {"iconName": 0xe62c, "typeName": "投资亏损","type":"expend"},
   ]; //投
   List _otherLst = [
-    {"iconName": 0xe563, "typeName": "其他"},
-    {"iconName": 0xe65f, "typeName": "意外损失"},
-    {"iconName": 0xe675, "typeName": "手续费"},
+    {"iconName": 0xe563, "typeName": "其他","type":"expend"},
+    {"iconName": 0xe65f, "typeName": "意外损失","type":"expend"},
+    {"iconName": 0xe675, "typeName": "手续费","type":"expend"},
   ]; //其
 
   @override
@@ -836,7 +841,7 @@ class _TallyTypeListState extends State<TallyTypeList> {
               behavior: HitTestBehavior.translucent,
               onTap: () {
                 setState(() {
-                  widget.onClick(_lst["typeName"]);
+                  widget.onClick(_lst["typeName"]+","+_lst["type"]);
                 });
               },
               child: Padding(

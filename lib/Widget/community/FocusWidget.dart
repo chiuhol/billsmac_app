@@ -1,4 +1,5 @@
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:billsmac_app/Page/community/DetailPage.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
@@ -40,16 +41,19 @@ class _FocusWidgetState extends State<FocusWidget>
 
   @protected
   _search() async {
+    String _userId = await LocalStorage.get("_id").then((result) {
+      return result;
+    });
     try {
       BaseOptions options =
-          BaseOptions(method: "get", queryParameters: {"q": "following","page":_pageIndex,"per_Page":10});
+          BaseOptions(method: "get", queryParameters: {"q": "following","userId":_userId,"page":_pageIndex,"per_Page":10});
       var dio = new Dio(options);
       var response = await dio.get(Address.getActicles());
       print(response.data.toString());
       if (response.data["status"] == 200) {
         if (mounted) {
           setState(() {
-            _articleLst.addAll(response.data["data"]["acticle"]);
+            _articleLst.addAll(response.data["data"]["newArticleLst"]);
           });
         }
       }

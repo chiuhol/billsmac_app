@@ -105,14 +105,23 @@ class ClassificationPageState extends State<ClassificationPage> {
     mData = new List();
     mData = [];
     for (int i = 0; i < msg.length; i++) {
+      String _amountType = "expendTotle";
+      num _totle;
       if (msg[i]["typeStr"] == null || msg[i]["typeStr"] == "") {
         return;
       }
+      if(status){
+        _amountType = "incomeTotle";
+        _totle = _incomeTotle;
+      }else{
+        _amountType = "expendTotle";
+        _totle = _expendTotle;
+      }
       PieData p1 = new PieData();
       p1.name = msg[i]["typeStr"];
-      p1.price = msg[i]["expendTotle"];
+      p1.price = msg[i][_amountType];
       p1.percentage = double.parse(
-          CommonUtil.formatNumber(msg[i]["expendTotle"] / _expendTotle, 3));
+          CommonUtil.formatNumber(msg[i][_amountType] / _totle, 3));
       p1.color = CommonUtil.slRandomColor();
 
       pieData = p1;
@@ -188,6 +197,11 @@ class ClassificationPageState extends State<ClassificationPage> {
               if (mounted) {
                 setState(() {
                   status = !status;
+                  if(!status){
+                    _initPie(_expendTotleLst);
+                  }else{
+                    _initPie(_incomeTotleLst);
+                  }
                 });
               }
             },
@@ -226,11 +240,13 @@ class ClassificationPageState extends State<ClassificationPage> {
                 Padding(
                     padding:
                     EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 20),
-                    child: ListView.builder(
-                        itemBuilder: itemBuilder,
-                        itemCount: status == true
-                            ? _incomeTotleLst.length
-                            : _expendTotleLst.length,
+                    child: status == true
+                        ? ListView.builder(
+                        itemBuilder: incomeItemBuilder,
+                        itemCount: _incomeTotleLst.length,
+                        shrinkWrap: true,physics: NeverScrollableScrollPhysics()):ListView.builder(
+                        itemBuilder: expendItemBuilder,
+                        itemCount: _expendTotleLst.length,
                         shrinkWrap: true,physics: NeverScrollableScrollPhysics()))
               ]))
         ]
@@ -238,13 +254,8 @@ class ClassificationPageState extends State<ClassificationPage> {
     ]);
   }
 
-  Widget itemBuilder(BuildContext context, int index) {
-    Map _totle;
-    if (status) {
-      _totle = _incomeTotleLst[index];
-    } else {
-      _totle = _expendTotleLst[index];
-    }
+  Widget expendItemBuilder(BuildContext context, int index) {
+    Map _totle = _expendTotleLst[index];
     return Column(children: <Widget>[
       Padding(
           padding: EdgeInsets.only(top: 5, bottom: 5),
@@ -259,6 +270,29 @@ class ClassificationPageState extends State<ClassificationPage> {
                     style: TextStyle(
                         color: MyColors.black_32, fontSize: MyFonts.f_16)),
                 Text(_totle["expendTotle"].toString() ?? "",
+                    style: TextStyle(
+                        color: MyColors.black_32, fontSize: MyFonts.f_16))
+              ])),
+      SeparatorWidget()
+    ]);
+  }
+
+  Widget incomeItemBuilder(BuildContext context, int index) {
+    Map _totle = _incomeTotleLst[index];
+    return Column(children: <Widget>[
+      Padding(
+          padding: EdgeInsets.only(top: 5, bottom: 5),
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text(
+                    _totle["typeStr"] +
+                        "/" +
+                        CommonUtil.formatNumber(
+                            _totle["incomeTotle"] / _incomeTotle, 3),
+                    style: TextStyle(
+                        color: MyColors.black_32, fontSize: MyFonts.f_16)),
+                Text(_totle["incomeTotle"].toString() ?? "",
                     style: TextStyle(
                         color: MyColors.black_32, fontSize: MyFonts.f_16))
               ])),

@@ -146,6 +146,20 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                             controller: _pinEditingController,
                             autoFocus: true,
                             textInputAction: TextInputAction.go,
+                            onChanged: (pin)async{
+                              if(pin.length == 4){
+                                var res = await Apifm.smsValidateCodeCheck(
+                                    widget.phoneNum, pin);
+                                if (res["code"] == 0) {
+                                  CommonUtil.openPage(
+                                      context,
+                                      setPwdPage(
+                                          phoneNum: widget.phoneNum, code: pin));
+                                } else {
+                                  CommonUtil.showMyToast(res["msg"]);
+                                }
+                              }
+                            },
                             onSubmit: (pin) async {
                               var res = await Apifm.smsValidateCodeCheck(
                                   widget.phoneNum, pin);

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:billsmac_app/Page/SplashPage.dart';
 import 'package:billsmac_app/Page/HomeMainPage.dart';
 import 'package:billsmac_app/Page/mine/MineMainPage.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -36,6 +37,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
   String _ImageUrl = "";
 
   @protected
@@ -106,6 +108,23 @@ class _MyAppState extends State<MyApp> {
 
     loadData_dio_dioOfOptionsSetting("https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1");
     getDeviceInfo();//获取运行设备信息
+
+    flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+    var android = new AndroidInitializationSettings('@mipmap/ic_launcher');
+    var iOS = new IOSInitializationSettings();
+    var initSetttings = new InitializationSettings(android, iOS);
+    flutterLocalNotificationsPlugin.initialize(initSetttings, onSelectNotification: onSelectNotification);
+  }
+
+  Future onSelectNotification(String payload) {
+    debugPrint("payload : $payload");
+    showDialog(
+      context: context,
+      builder: (_) => new AlertDialog(
+        title: new Text('Notification'),
+        content: new Text('$payload'),
+      ),
+    );
   }
 
   @override

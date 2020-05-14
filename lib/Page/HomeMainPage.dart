@@ -24,7 +24,11 @@ class _HomeMainPageState extends State<HomeMainPage>
   static Color _activeColor = MyColors.orange_67;
   static int _currentIndex = 1;
 
-  List<Widget> _children;
+  List<Widget> _children = [
+    CommunityMainPage(),
+    TallyMainPage(),
+    MineMainPage(),
+  ];
   List<BottomNavigationBarItem> _list = <BottomNavigationBarItem>[];
 
   @override
@@ -32,11 +36,6 @@ class _HomeMainPageState extends State<HomeMainPage>
     // TODO: implement initState
     super.initState();
 
-    _children = [
-      CommunityMainPage(),
-      TallyMainPage(),
-      MineMainPage(),
-    ];
     _list = <BottomNavigationBarItem>[
       BottomNavigationBarItem(
           icon: Icon(IconData(0xe61c, fontFamily: 'MyIcons'),

@@ -28,7 +28,6 @@ class _DetailPageState extends State<DetailPage> {
   String _title = '';
   String _subTitle = '';
   int _focusNum = 0;
-  int _commentNum = 0;
   int _browseNum = 0;
   int _goodsNum = 0;
 
@@ -54,21 +53,29 @@ class _DetailPageState extends State<DetailPage> {
 
   @protected
   _getArticle() async {
+    String _userId = await LocalStorage.get("_id").then((result) {
+      return result;
+    });
     try {
       http.Response res =
           await http.get(Address.getActiclesById(widget.articleId));
       if (jsonDecode(res.body)["status"] == 200) {
         print(jsonDecode(res.body)["data"]);
-        var article = jsonDecode(res.body)["data"]["acticle"];
+        var article = jsonDecode(res.body)["data"]["newArticle"]["article"];
+        var focusLst = jsonDecode(res.body)["data"]["newArticle"]["focusLst"];
+        var goodQuestionLst = jsonDecode(res.body)["data"]["newArticle"]["goodQuestionLst"];
         setState(() {
-          _title = article[0]["title"] ?? "";
-          _subTitle = article[0]["subTitle"] ?? "";
-          _focusNum = article[0]["focusNum"] ?? 0;
-          _commentNum = article[0]["commentNum"] ?? 0;
-          _browseNum = article[0]["browseNum"] ?? 0;
-          _isFocus = article[0]["following"] ?? false;
-          _goodsNum = article[0]["goodsNum"] ?? 0;
-          _isGoods = article[0]["isGoods"] ?? false;
+          _title = article["title"] ?? "";
+          _subTitle = article["subTitle"] ?? "";
+          _focusNum = article["focusNum"] ?? 0;
+          _browseNum = article["browseNum"] ?? 0;
+          _goodsNum = article["goodsNum"] ?? 0;
+          if(focusLst.contains(_userId)){
+            _isFocus = true;
+          }
+          if(goodQuestionLst.contains(_userId)){
+            _isGoods = true;
+          }
         });
       } else {
         CommonUtil.showMyToast(jsonDecode(res.body)["message"]);
@@ -80,14 +87,32 @@ class _DetailPageState extends State<DetailPage> {
 
   @protected
   _getComments() async {
+    String _userId = await LocalStorage.get("_id").then((result) {
+      return result;
+    });
     try {
       http.Response res =
           await http.get(Address.getArticleComment(widget.articleId));
       if (jsonDecode(res.body)["status"] == 200) {
         print(jsonDecode(res.body)["data"]);
-        setState(() {
-          _commentLst = jsonDecode(res.body)["data"]["comments"];
-        });
+        if(mounted){
+          setState(() {
+            var lst = jsonDecode(res.body)["data"]["newComments"];
+            for(int i=0;i<lst.length;i++){
+              if(lst[i]["agreeLst"].length != 0 && lst[i]["agreeLst"].contains(_userId)){
+                lst[i]["comments"]["isAgree"] = true;
+              }else{
+                lst[i]["comments"]["isAgree"] = false;
+              }
+              if(lst[i]["likeLst"].length != 0 && lst[i]["likeLst"].contains(_userId)){
+                lst[i]["comments"]["isLike"] = true;
+              }else{
+                lst[i]["comments"]["isLike"] = false;
+              }
+              _commentLst.add(lst[i]["comments"]);
+            }
+          });
+        }
       } else {
         CommonUtil.showMyToast(jsonDecode(res.body)["message"]);
       }
@@ -144,8 +169,7 @@ class _DetailPageState extends State<DetailPage> {
       if (jsonDecode(res.body)["status"] == 200) {
         if (mounted) {
           setState(() {
-            _commentLst.add({"content": _commentController.text});
-            _commentNum++;
+            _commentLst.add(jsonDecode(res.body)["data"]["comments"]);
           });
         }
       } else {
@@ -177,18 +201,94 @@ class _DetailPageState extends State<DetailPage> {
     }
   }
 
+  //关注或取消关注
   @protected
-  _updateComment(String commentId, Map msg, Function function) async {
-    String token = await LocalStorage.get("token").then((result) {
+  _focus(isFocus,Function function) async {
+    String _userId = await LocalStorage.get("_id").then((result) {
       return result;
     });
     try {
       BaseOptions options = BaseOptions(
-          method: "patch", headers: {"Authorization": "Bearer $token"});
+          method: "post");
       var dio = new Dio(options);
-      var response = await dio.patch(
-          Address.updateCommentById(widget.articleId, commentId),
-          data: msg);
+      var response = await dio
+          .post(isFocus == true?Address.articleFocus():Address.cancelArticleFocus(), data: {
+            "communityArticleId":widget.articleId,
+        "userId":_userId
+      });
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        function();
+      }
+    } catch (err) {
+      CommonUtil.showMyToast(err.toString());
+    }
+  }
+
+  //好问题或取消好问题
+  @protected
+  _goodQuestion(isGoods,Function function) async {
+    String _userId = await LocalStorage.get("_id").then((result) {
+      return result;
+    });
+    try {
+      BaseOptions options = BaseOptions(
+          method: "post");
+      var dio = new Dio(options);
+      var response = await dio
+          .post(isGoods == true?Address.articleGoods():Address.cancelArticleGoods(), data: {
+        "communityArticleId":widget.articleId,
+        "userId":_userId
+      });
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        function();
+      }
+    } catch (err) {
+      CommonUtil.showMyToast(err.toString());
+    }
+  }
+
+  //点赞或取消点赞
+  @protected
+  _commentAgree(bool isAgree,String commentId,Function function) async{
+    String _userId = await LocalStorage.get("_id").then((result) {
+      return result;
+    });
+    try {
+      BaseOptions options = BaseOptions(
+          method: "post");
+      var dio = new Dio(options);
+      var response = await dio
+          .post(isAgree == true?Address.commentAgree(widget.articleId):Address.cancelCommentAgree(widget.articleId), data: {
+        "commentId":commentId,
+        "userId":_userId
+      });
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        function();
+      }
+    } catch (err) {
+      print(err.toString());
+      CommonUtil.showMyToast(err.toString());
+    }
+  }
+
+  //喜欢或取消喜欢
+  @protected
+  _commentLike(bool isLike,String commentId,Function function) async {
+    String _userId = await LocalStorage.get("_id").then((result) {
+      return result;
+    });
+    try {
+      BaseOptions options = BaseOptions(
+          method: "post");
+      var dio = new Dio(options);
+      var response = await dio
+          .post(isLike == true?Address.commentLike(widget.articleId):Address.cancelCommentLike(widget.articleId), data: {
+        "commentId":commentId,
+        "userId":_userId
+      });
       print(response.data.toString());
       if (response.data["status"] == 200) {
         function();
@@ -256,7 +356,7 @@ class _DetailPageState extends State<DetailPage> {
                                 Expanded(
                                     child: button(
                                         _isFocus == false ? '关注问题' : '已关注', () {
-                                  _update({"following": !_isFocus}, () {
+                                      _focus(!_isFocus, () {
                                     if (mounted) {
                                       setState(() {
                                         if (_isFocus == false) {
@@ -291,7 +391,9 @@ class _DetailPageState extends State<DetailPage> {
       SizedBox(width: 18),
       GestureDetector(
           behavior: HitTestBehavior.translucent,
-          onTap: () {},
+          onTap: () {
+            CommonUtil.showMyToast("暂未开放");
+          },
           child: Icon(Icons.more_horiz, size: 20, color: MyColors.grey_80))
     ]);
   }
@@ -330,7 +432,7 @@ class _DetailPageState extends State<DetailPage> {
                                   color: MyColors.grey_99,
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(3)))),
-                          richText(_commentNum, '评论'),
+                          richText(_commentLst.length, '评论'),
                           Container(
                               margin: EdgeInsets.only(left: 12, right: 12),
                               width: 3,
@@ -345,7 +447,7 @@ class _DetailPageState extends State<DetailPage> {
                         GestureDetector(
                             behavior: HitTestBehavior.translucent,
                             onTap: () {
-                              _update({"isGoods": !_isGoods}, () {
+                              _goodQuestion(!_isGoods, () {
                                 if (mounted) {
                                   setState(() {
                                     if (_isGoods == false) {
@@ -429,6 +531,8 @@ class _DetailPageState extends State<DetailPage> {
         ));
   }
 
+  bool _isChange = false;
+
   Widget answersWidget() {
     return Column(children: <Widget>[
       Padding(
@@ -436,20 +540,32 @@ class _DetailPageState extends State<DetailPage> {
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Text('回答' + " " + _commentNum.toString(),
+                Text('回答' + " " + _commentLst.length.toString(),
                     style: TextStyle(
                         color: MyColors.black_1a,
                         fontWeight: FontWeight.bold,
                         fontSize: MyFonts.f_16)),
                 GestureDetector(
                     behavior: HitTestBehavior.translucent,
-                    onTap: () {},
+                    onTap: () {
+                      if(mounted){
+                        setState(() {
+                          _isChange = !_isChange;
+                          if(!_isChange){
+                            _sortType = "按时间排序";
+                            _commentLst.sort((left,right)=>DateTime.parse(left["createdAt"]).compareTo(DateTime.parse(left["createdAt"])));
+                          }else{
+                            _sortType = "默认排序";
+                          }
+                        });
+                      }
+                    },
                     child: Row(children: <Widget>[
                       Text(_sortType,
                           style: TextStyle(
                               color: MyColors.grey_99, fontSize: MyFonts.f_16)),
                       SizedBox(width: 8),
-                      Icon(Icons.keyboard_arrow_down,
+                      Icon(Icons.loop,
                           size: 20, color: MyColors.grey_99)
                     ]))
               ])),
@@ -526,14 +642,18 @@ class _DetailPageState extends State<DetailPage> {
                                     "喜欢",
                                 style: TextStyle(
                                     color: MyColors.grey_99,
+                                    fontSize: MyFonts.f_14)),SizedBox(width: 18),
+                            Text(
+                                CommonUtil.getTimeDuration(_comment["createdAt"]),
+                                style: TextStyle(
+                                    color: MyColors.grey_99,
                                     fontSize: MyFonts.f_14))
                           ]),
                           Row(children: <Widget>[
                             GestureDetector(
                                 behavior: HitTestBehavior.translucent,
                                 onTap: () {
-                                  _updateComment(_comment["_id"],
-                                      {"isAgree": !_comment["isAgree"]}, () {
+                                  _commentAgree(!_comment["isAgree"],_comment["_id"], () {
                                     if (mounted) {
                                       setState(() {
                                         if (!_comment["isAgree"]) {
@@ -556,8 +676,7 @@ class _DetailPageState extends State<DetailPage> {
                             GestureDetector(
                                 behavior: HitTestBehavior.translucent,
                                 onTap: () {
-                                  _updateComment(_comment["_id"],
-                                      {"isLike": !_comment["isLike"]}, () {
+                                  _commentLike(!_comment["isLike"],_comment["_id"], () {
                                     if (mounted) {
                                       setState(() {
                                         setState(() {

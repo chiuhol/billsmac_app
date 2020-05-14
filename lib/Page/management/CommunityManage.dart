@@ -78,6 +78,7 @@ class _CommunityManageState extends State<CommunityManage> {
                   items["title"] = msg["title"];
                   items["subTitle"] = msg["subTitle"];
                   items["content"] = msg["content"];
+                  items["recommend"] = msg["recommend"];
                 }
               });
             }
@@ -485,13 +486,29 @@ class _CommunityManageState extends State<CommunityManage> {
                     ])),
                 SeparatorWidget()
               ])),
-            actions: <Widget>[],
+            actions: <Widget>[
+              GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  child: Container(
+                      height: 100,
+                      width: 30,
+                      color: MyColors.orange_68,
+                      child: Center(
+                          child: Text(_article["recommend"] == true?"取消推荐":'设为推荐',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: MyColors.white_ff,
+                                  fontSize: MyFonts.f_18)))),
+                  onTap: () {
+                    _updateArticle(_article["_id"],{"recommend":!_article["recommend"]},true);
+                  })
+            ],
             secondaryActions: <Widget>[
               GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   child: Container(
                       height: 100,
-                      width: 50,
+                      width: 30,
                       color: MyColors.green_8d,
                       child: Center(
                           child: Text('修改',
@@ -506,7 +523,7 @@ class _CommunityManageState extends State<CommunityManage> {
                   behavior: HitTestBehavior.translucent,
                   child: Container(
                       height: 100,
-                      width: 50,
+                      width: 30,
                       color: _article["status"] == false?MyColors.green_ad:MyColors.red_43,
                       child: Center(
                           child: Text(_article["status"] == false?'启用':'禁用',

@@ -13,6 +13,11 @@ class Address {
     return '$host/users/login';
   }
 
+  //创建用户
+  static String createUser(){
+    return '$host/users';
+  }
+
   //获取用户资料
   static String getPersonalMsg(){
     return '$host/users/login';
@@ -201,5 +206,45 @@ class Address {
   //获取用户统计数据
   static String getUserStatic(){
     return '$host/usersStatic';
+  }
+
+  //取消社区文章关注
+  static String cancelArticleFocus(){
+    return '$host/communityActicles/cancelFocusArticle';
+  }
+
+  //新增社区文章关注
+  static String articleFocus(){
+    return '$host/communityActicles/focusArticle';
+  }
+
+  //取消社区文章好问题
+  static String cancelArticleGoods(){
+    return '$host/communityActicles/cancelGood';
+  }
+
+  //新增社区文章好问题
+  static String articleGoods(){
+    return '$host/communityActicles/good';
+  }
+
+  //新增社区文章评论点赞
+  static String commentAgree(String articleId){
+    return '$host/communityActicles/$articleId/comments/agreeComment';
+  }
+
+  //取消社区文章评论点赞
+  static String cancelCommentAgree(String articleId){
+    return '$host/communityActicles/$articleId/comments/cancelAgreeComment';
+  }
+
+  //新增社区文章评论喜欢
+  static String commentLike(String articleId){
+    return '$host/communityActicles/$articleId/comments/likeComment';
+  }
+
+  //取消社区文章评论喜欢
+  static String cancelCommentLike(String articleId){
+    return '$host/communityActicles/$articleId/comments/cancelLikeComment';
   }
 }

@@ -1,6 +1,11 @@
+import 'dart:convert';
+
 import 'package:billsmac_app/Common/CommonInsert.dart';
 import 'package:apifm/apifm.dart' as Apifm;
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 import 'HomeMainPage.dart';
 
@@ -20,6 +25,36 @@ class setPwdPage extends StatefulWidget {
 class _setPwdPageState extends State<setPwdPage> {
   TextEditingController _pwdController = TextEditingController();
   TextEditingController _againPwdController = TextEditingController();
+
+  void login() async {
+    try {
+      http.Response res = await http.post(Address.login(),
+          body: {"phone": widget.phoneNum, "password": _againPwdController.text});
+      print(jsonDecode(res.body));
+      if (jsonDecode(res.body)["status"] == 200) {
+        LocalStorage.save("token", jsonDecode(res.body)["data"]["token"]);
+        var _user = jsonDecode(res.body)["data"]["user"];
+        LocalStorage.save("nikeName", _user["nikeName"]??"");
+        LocalStorage.save("gender", _user["gender"]??"");
+        LocalStorage.save("_id", _user["_id"]??"");
+        LocalStorage.save("identity", _user["identity"]??"");
+        LocalStorage.save("birth", _user["birth"]??"");
+        LocalStorage.save("locations", _user["locations"]??"");
+        if(_user["avatar_url"] != null && _user["avatar_url"] != ''){
+          LocalStorage.save(
+              "avatar_url", _user["avatar_url"].toString().substring(21));
+        }
+        LocalStorage.save("remindTime", _user["remindTime"]??"");
+        LocalStorage.save("phone", _user["phone"]??"");
+        Navigator.pushReplacementNamed(context, '/HomeMain_Page');
+      } else {
+        print(jsonDecode(res.body)["message"]);
+        CommonUtil.showMyToast(jsonDecode(res.body)["message"]);
+      }
+    } catch (err) {
+      CommonUtil.showMyToast("系统开小差了~");
+    }
+  }
 
   @protected
   _submit() async {
@@ -41,8 +76,22 @@ class _setPwdPageState extends State<setPwdPage> {
       'pwd': _againPwdController.text
     });
     if (res2["code"] == 0) {
-      CommonUtil.showMyToast("注册成功");
-      CommonUtil.openPage(context, HomeMainPage());
+      try {
+        BaseOptions options = BaseOptions(method: "post");
+        var dio = new Dio(options);
+        var response = await dio.post(Address.createUser(), data: {
+          "phone": widget.phoneNum,
+          "password": _againPwdController.text
+        });
+        print(response.data.toString());
+        if (response.data["status"] == 200) {
+          CommonUtil.showMyToast("注册成功");
+          login();
+        }
+      } catch (err) {
+        print(err.toString());
+        CommonUtil.showMyToast("系统开小差了~");
+      }
     } else {
       CommonUtil.showMyToast(res2["msg"]);
     }
