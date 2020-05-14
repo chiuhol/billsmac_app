@@ -57,6 +57,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
           data: msg);
       print(response.data.toString());
       if (response.data["status"] == 200) {
+        LocalStorage.save("avatar_url", msg["avatar_url"]);
         LocalStorage.save("nikeName", msg["nikeName"]);
         LocalStorage.save("gender", msg["gender"]);
         LocalStorage.save("identity", msg["identity"]);
@@ -279,14 +280,40 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
           Map<String, dynamic> map = result;
           if (mounted) {
             setState(() {
-              _avatar = map['croppedFile'];
-//              _avatarPath = map['avatarPath'];
-
-//              _updateAvatarToDB();
+              String _avatarPath = map['avatarPath'];
+              _updateAvatarToDB(imageFile);
             });
           }
         }
       });
+    }
+  }
+
+  @protected
+  _updateAvatarToDB(File image)async{
+    try {
+      String path = image.path;
+      var name = path.substring(path.lastIndexOf("/") + 1, path.length);
+      var suffix = name.substring(name.lastIndexOf(".") + 1, name.length);
+
+      FormData formData = new FormData.from({
+        "file": new UploadFileInfo(image, name,
+            contentType: ContentType.parse("image/$suffix"))
+      });
+      BaseOptions options = BaseOptions(method: "post");
+      var dio = new Dio(options);
+      var response = await dio.post(Address.uploadPhoto(),data: formData);
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        if (mounted) {
+          setState(() {
+            _avatar = response.data["data"]["url"];
+          });
+        }
+      }
+    } catch (err) {
+      print(err.toString());
+      CommonUtil.showMyToast("系统开小差了~");
     }
   }
 
@@ -304,7 +331,10 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                   children: <Widget>[
                     GestureDetector(
                         behavior: HitTestBehavior.translucent,
-                        onTap: _openCamera,
+                        onTap: (){
+                          CommonUtil.closePage(context);
+                          _openCamera();
+                        },
                         child: Padding(
                             padding: EdgeInsets.only(top: 12, bottom: 12),
                             child: Text("拍照",
@@ -314,7 +344,10 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                     SeparatorWidget(),
                     GestureDetector(
                         behavior: HitTestBehavior.translucent,
-                        onTap: _openGallery,
+                        onTap: (){
+                          CommonUtil.closePage(context);
+                          _openGallery();
+                        },
                         child: Padding(
                             padding: EdgeInsets.only(top: 12, bottom: 12),
                             child: Text("从相册选择",
@@ -386,6 +419,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                 _sex = "secrecy";
               }
               _savePersonalMsg({
+                "avatar_url":_avatar,
                 "nikeName":_nameController.text,
                 "gender":_sex,
                 "identity":_identity,
@@ -406,7 +440,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                   parent: AlwaysScrollableScrollPhysics()),
               child: Column(children: <Widget>[
                 SizedBox(height: 2),
-                builder("头像", "116.62.141.151"+_avatar, _updateAvatar),
+                builder("头像", "http://$_avatar", _updateAvatar),
                 SeparatorWidget(),
                 builder("昵称", _nikeName??"", () {}),
                 SizedBox(height: 12),

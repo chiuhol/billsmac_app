@@ -5,6 +5,7 @@ import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:billsmac_app/Page/mine/RemindPage.dart';
 import 'package:billsmac_app/Page/mine/setting/SettingMainPage.dart';
 import 'package:billsmac_app/Widget/SubprojectWidget.dart';
+import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 
 import 'PersonalInfoPage.dart';
@@ -23,34 +24,67 @@ class MineMainPage extends StatefulWidget {
 
 class _MineMainPageState extends State<MineMainPage> {
   String _nikeName = '';
-  int _day = 7;
-  String _assistantName = '梁佩诗';
+  int _day = 0;
+  String _assistantName = '';
   String _avatar = "";
-
+  var object = [];
   String _remindTime = "";
   String _remindPeriod = "";
 
+//  @protected
+//  _getPersonalMsg()async{
+//    String _name = await LocalStorage.get("nikeName").then((result) {
+//      return result;
+//    });
+//    String _avatarUrl = await LocalStorage.get("avatar_url").then((result) {
+//      return result;
+//    });
+//    String _time = await LocalStorage.get("remindTime").then((result) {
+//      return result;
+//    });
+//    String _period = await LocalStorage.get("remindPeriod").then((result) {
+//      return result;
+//    });
+//    if(mounted){
+//      setState(() {
+//        _nikeName = _name;
+//        _avatar = _avatarUrl;
+//        _remindTime = _time;
+//        _remindPeriod = _period;
+//      });
+//    }
+//  }
+
   @protected
   _getPersonalMsg()async{
-    String _name = await LocalStorage.get("nikeName").then((result) {
+    String _userId = await LocalStorage.get("_id").then((result) {
       return result;
     });
-    String _avatarUrl = await LocalStorage.get("avatar_url").then((result) {
-      return result;
-    });
-    String _time = await LocalStorage.get("remindTime").then((result) {
-      return result;
-    });
-    String _period = await LocalStorage.get("remindPeriod").then((result) {
-      return result;
-    });
-    if(mounted){
-      setState(() {
-        _nikeName = _name;
-        _avatar = _avatarUrl;
-        _remindTime = _time;
-        _remindPeriod = _period;
-      });
+    try {
+      BaseOptions options = BaseOptions(method: "get");
+      var dio = new Dio(options);
+      var response = await dio.get(Address.getUser(_userId));
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        var user = response.data["data"]["user"];
+        object = response.data["data"]["objects"];
+        if (mounted) {
+          setState(() {
+            _nikeName = user["nikeName"];
+            _avatar = user["avatar_url"];
+            _remindTime = user["remindTime"];
+            DateTime now = DateTime.now();
+            DateTime createdAt = DateTime.parse(user["createdAt"]);
+            var hours = now.difference(createdAt).inDays;
+            _day = hours;
+            if(object.length != 0){
+              _assistantName = object[0]["nikeName"];
+            }
+          });
+        }
+      }
+    } catch (err) {
+      CommonUtil.showMyToast("系统开小差了~");
     }
   }
 
@@ -89,7 +123,11 @@ class _MineMainPageState extends State<MineMainPage> {
                       GestureDetector(
                           behavior: HitTestBehavior.translucent,
                           onTap: () {
-                            CommonUtil.openPage(context, PersonalInfoPage());
+                            CommonUtil.openPage(context, PersonalInfoPage()).then((value){
+                              if(value == "success"){
+                                _getPersonalMsg();
+                              }
+                            });
                           },
                           child: Container(
                               margin:
@@ -102,7 +140,7 @@ class _MineMainPageState extends State<MineMainPage> {
                                         child: Row(children: <Widget>[
                                       ClipOval(
                                           child: Image.network(
-                                              "http://116.62.141.151"+_avatar,
+                                              "http://$_avatar",
                                               width: 60,
                                               height: 60,
                                               fit: BoxFit.cover)),
@@ -120,15 +158,15 @@ class _MineMainPageState extends State<MineMainPage> {
                                             SizedBox(height: 8),
                                             RichText(
                                                 text: TextSpan(
-                                                    text: '和' +
+                                                    text: object.length == 0?"":('和' +
                                                         _assistantName +
-                                                        '在一起的第',
+                                                        '在一起的第'),
                                                     style: TextStyle(
                                                         color: MyColors.grey_cb,
                                                         fontSize: MyFonts.f_14),
                                                     children: <TextSpan>[
                                                   TextSpan(
-                                                    text: _day.toString(),
+                                                    text: object.length == 0?"":_day.toString(),
                                                     style: TextStyle(
                                                         color:
                                                             MyColors.orange_67,
@@ -137,7 +175,7 @@ class _MineMainPageState extends State<MineMainPage> {
                                                             FontWeight.bold),
                                                   ),
                                                   TextSpan(
-                                                    text: '天',
+                                                    text: object.length == 0?"":'天',
                                                     style: TextStyle(
                                                         color: MyColors.grey_cb,
                                                         fontSize: MyFonts.f_14),

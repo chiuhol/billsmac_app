@@ -231,9 +231,7 @@ class _TallyMainPageState extends State<TallyMainPage>
     });
     if(mounted){
       setState(() {
-        _avatar = "116.62.141.151$_avatarUrl";
-        print(_avatarUrl);
-        print(_avatar);
+        _avatar = _avatarUrl;
       });
     }
   }
@@ -509,7 +507,7 @@ class _TallyMainPageState extends State<TallyMainPage>
               SizedBox(width: 12),
               ClipOval(
                   child: Image.network(
-                      _avatar,
+                      "http://$_avatar",
                       width: 45,
                       height: 45,
                       fit: BoxFit.cover))

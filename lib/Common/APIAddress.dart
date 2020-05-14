@@ -18,9 +18,19 @@ class Address {
     return '$host/users';
   }
 
+  //上传图片
+  static String uploadPhoto(){
+    return '$host/upload';
+  }
+
   //获取用户资料
   static String getPersonalMsg(){
     return '$host/users/login';
+  }
+
+  //获取用户资料
+  static String getUser(String userId){
+    return '$host/users/$userId';
   }
 
   //获取用户列表

@@ -31,11 +31,15 @@ class _HomeMainPageState extends State<HomeMainPage>
   ];
   List<BottomNavigationBarItem> _list = <BottomNavigationBarItem>[];
 
+  //创建页面控制器
+//  var _pageController;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
+//    _pageController = new PageController(initialPage : 1);
     _list = <BottomNavigationBarItem>[
       BottomNavigationBarItem(
           icon: Icon(IconData(0xe61c, fontFamily: 'MyIcons'),
@@ -71,6 +75,13 @@ class _HomeMainPageState extends State<HomeMainPage>
           index: _currentIndex,
           children: _children,
         ),
+//        body: PageView(
+//          controller: _pageController,
+//          children: _children,
+//          onPageChanged: (index){
+//            _currentIndex = index;
+//          },
+//        ),
         bottomNavigationBar: BottomNavigationBar(
             backgroundColor: MyColors.white_fe,
             currentIndex: _currentIndex,
@@ -78,6 +89,7 @@ class _HomeMainPageState extends State<HomeMainPage>
               setState(() {
                 _currentIndex = index;
               });
+//              _pageController.animateToPage(index, duration: new Duration(milliseconds: 500),curve:new ElasticOutCurve(4));
             },
             type: BottomNavigationBarType.fixed,
             items: _list));
