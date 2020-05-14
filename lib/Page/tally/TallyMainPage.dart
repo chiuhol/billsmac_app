@@ -32,6 +32,7 @@ class _TallyMainPageState extends State<TallyMainPage>
   num _mouth;
 
   String _avatar = 'http://p2.qhimgs4.com/t014719903aa3245983.jpg';
+  String _objectAvatar = "'https://b-ssl.duitang.com/uploads/item/201701/13/20170113101107_aP5Fn.thumb.700_0.jpeg'";
 
   int _pageIndex = 1;
 
@@ -236,6 +237,32 @@ class _TallyMainPageState extends State<TallyMainPage>
     }
   }
 
+  @protected
+  _getObject()async{
+    String _userId = await LocalStorage.get("_id").then((result) {
+      return result;
+    });
+    try {
+      BaseOptions options =
+      BaseOptions(method: "get");
+      var dio = new Dio(options);
+      var response = await dio.get(Address.getObject(_userId));
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        var res = response.data["data"]["objects"];
+        if (mounted) {
+          setState(() {
+            if(res.length != 0){
+              _objectAvatar = res[0]["avatar"];
+            }
+          });
+        }
+      }
+    } catch (err) {
+      CommonUtil.showMyToast("系统开小差了~");
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -244,7 +271,7 @@ class _TallyMainPageState extends State<TallyMainPage>
     _getPersonalMsg();//获取用户信息
 //    _checkToken();
     _getChatroom(); //获取聊天室信息
-
+    _getObject();//获取对象头像
     _mouth = _now.month;
     _getTotle();
     _tabController = TabController(
@@ -444,7 +471,7 @@ class _TallyMainPageState extends State<TallyMainPage>
               },
               child: ClipOval(
                   child: Image.network(
-                      'https://b-ssl.duitang.com/uploads/item/201701/13/20170113101107_aP5Fn.thumb.700_0.jpeg',
+                      _objectAvatar,
                       width: 45,
                       height: 45,
                       fit: BoxFit.cover))),

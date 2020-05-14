@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
@@ -8,6 +9,8 @@ import 'package:http/http.dart' as http;
 ///2020-2-22
 
 class ChatroomMainPage extends StatefulWidget {
+  final Map object;
+  ChatroomMainPage({this.object});
   @override
   _ChatroomMainPageState createState() => _ChatroomMainPageState();
 }
@@ -22,16 +25,25 @@ class _ChatroomMainPageState extends State<ChatroomMainPage> {
 
   List _contentLst = [];
 
+  _getMine()async{
+    String _avatar_url = await LocalStorage.get("avatar_url").then((result) {
+      return result;
+    });
+    if(mounted){
+      setState(() {
+        _myAvatar = _avatar_url;
+      });
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
-    _nikeName = '小不点';
-    _objectAvatar =
-        'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=1908196590,4061628990&fm=11&gp=0.jpg';
-    _myAvatar =
-        'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=1379686624,47059782&fm=26&gp=0.jpg';
+    _nikeName = widget.object["nikeName"]??"";
+    _objectAvatar = widget.object["avatar"]??'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=1379686624,47059782&fm=26&gp=0.jpg';
+    _getMine();
   }
 
   @protected
@@ -182,7 +194,7 @@ class _ChatroomMainPageState extends State<ChatroomMainPage> {
                               fontSize: MyFonts.f_14))))),
           SizedBox(width: 12),
           ClipOval(
-              child: Image.network(_myAvatar,
+              child: Image.network("http://$_myAvatar",
                   width: 45, height: 45, fit: BoxFit.cover))
         ]));
   }

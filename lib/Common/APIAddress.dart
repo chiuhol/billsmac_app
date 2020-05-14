@@ -33,6 +33,16 @@ class Address {
     return '$host/users/$userId';
   }
 
+  //获取用户对象
+  static String getObject(String userId){
+    return '$host/users/$userId/objects/$userId';
+  }
+
+  //修改用户对象
+  static String updateObject(String userId,String objectId){
+    return '$host/users/$userId/objects/$objectId';
+  }
+
   //获取用户列表
   static String getUsers(){
     return '$host/users';

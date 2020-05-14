@@ -1,4 +1,6 @@
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
+import 'package:dio/dio.dart';
 
 import 'UpdateMsgPage.dart';
 
@@ -6,6 +8,8 @@ import 'UpdateMsgPage.dart';
 ///2020-2-22
 
 class UpdateObjectPage extends StatefulWidget {
+  final Map object;
+  UpdateObjectPage({this.object});
   @override
   _UpdateObjectPageState createState() => _UpdateObjectPageState();
 }
@@ -17,16 +21,43 @@ class _UpdateObjectPageState extends State<UpdateObjectPage> {
   String _calledHer = '';
   String _callMe = '';
 
+  num _days = 0;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
-    _nikeName = 'ps';
-    _avatar =
-        'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=1908196590,4061628990&fm=11&gp=0.jpg';
-    _calledHer = '老婆';
-    _callMe = '老公';
+    var res = widget.object;
+    _nikeName = res["nikeName"]??"";
+    _avatar = res["avatar"]??"";
+    _calledHer = _nikeName;
+    _callMe = res["calledMe"]??"";
+  }
+
+  @protected
+  _deleteObject(Map msg)async{
+    String _userId = await LocalStorage.get("_id").then((result) {
+      return result;
+    });
+    try {
+      BaseOptions options =
+      BaseOptions(method: "patch");
+      var dio = new Dio(options);
+      var response = await dio.patch(Address.updateObject(_userId,widget.object["_id"]),data: msg);
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        if (mounted) {
+          setState(() {
+            CommonUtil.showMyToast("删除成功");
+            CommonUtil.closePage(context);
+            CommonUtil.closePage(context);
+          });
+        }
+      }
+    } catch (err) {
+      CommonUtil.showMyToast("系统开小差了~");
+    }
   }
 
   @override
@@ -38,6 +69,19 @@ class _UpdateObjectPageState extends State<UpdateObjectPage> {
           backIcon: Icon(Icons.keyboard_arrow_left,
               color: MyColors.black_32, size: 28),
           color: MyColors.white_fe,
+          rightEvent: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: (){
+              _deleteObject({
+                "nikeName":_nikeName,
+                "calledMe":_callMe
+              });
+            },
+            child: Text("保存",style: TextStyle(
+              fontSize: MyFonts.f_16,
+              color: MyColors.green_8d
+            ))
+          ),
         ),
         body: Container(
             width: double.infinity,
@@ -70,7 +114,20 @@ class _UpdateObjectPageState extends State<UpdateObjectPage> {
                               borderRadius:
                                   BorderRadius.all(Radius.circular(20))),
                           child: Column(children: <Widget>[
-                            builder('她是我的', '女朋友', () {}),
+                            builder('她是我的', _nikeName, () {
+                              CommonUtil.openPage(
+                                  context,
+                                  UpdateMsgPage(
+                                    title: '她是我的',
+                                    content: _nikeName,
+                                  )).then((value) {
+                                if (value != null) {
+                                  setState(() {
+                                    _nikeName = value;
+                                  });
+                                }
+                              });
+                            }),
                             SeparatorWidget(),
                             builder('我叫她什么', _calledHer, () {
                               CommonUtil.openPage(
@@ -111,9 +168,13 @@ class _UpdateObjectPageState extends State<UpdateObjectPage> {
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(20))),
                               child: Column(children: <Widget>[
-                                builder('聊天背景', '', () {}),
+                                builder('聊天背景', '', () {
+                                  CommonUtil.showMyToast("暂未开放");
+                                }),
                                 SeparatorWidget(),
-                                builder('展示在一起的天数', '展示中', () {})
+                                builder('展示在一起的天数', '展示中', () {
+                                  CommonUtil.showMyToast("暂未开放");
+                                })
                               ]))),
                       Padding(
                           padding: EdgeInsets.only(top: 8),
@@ -133,7 +194,9 @@ class _UpdateObjectPageState extends State<UpdateObjectPage> {
                                   color: MyColors.white_fe),
                               child: new SizedBox.expand(
                                   child: new RaisedButton(
-                                onPressed: () {},
+                                onPressed: (){
+                                  _deleteObject({"status":false});
+                                },
                                 color: Colors.transparent,
                                 elevation: 0,
                                 // 正常时阴影隐藏
