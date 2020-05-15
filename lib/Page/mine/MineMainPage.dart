@@ -101,6 +101,8 @@ class _MineMainPageState extends State<MineMainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: Container(
+          width: double.infinity,
+            height: double.infinity,
             color: MyColors.white_fe,
             child: SingleChildScrollView(
                 physics: BouncingScrollPhysics(
@@ -108,18 +110,19 @@ class _MineMainPageState extends State<MineMainPage> {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: <Widget>[
-                      Container(
-                          padding: EdgeInsets.only(top: 50, right: 18),
-                          child: GestureDetector(
-                              behavior: HitTestBehavior.translucent,
-                              onTap: () {
-                                CommonUtil.openPage(
-                                    context, MessageCenterMainPage());
-                              },
-                              child: Icon(
-                                  IconData(0xe604, fontFamily: 'MyIcons'),
-                                  size: 24,
-                                  color: MyColors.orange_56))),
+//                      Container(
+//                          padding: EdgeInsets.only(top: 50, right: 18),
+//                          child: GestureDetector(
+//                              behavior: HitTestBehavior.translucent,
+//                              onTap: () {
+//                                CommonUtil.openPage(
+//                                    context, MessageCenterMainPage());
+//                              },
+//                              child: Icon(
+//                                  IconData(0xe604, fontFamily: 'MyIcons'),
+//                                  size: 24,
+//                                  color: MyColors.orange_56))),
+                    SizedBox(height: 50),
                       GestureDetector(
                           behavior: HitTestBehavior.translucent,
                           onTap: () {

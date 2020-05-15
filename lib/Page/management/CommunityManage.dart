@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:billsmac_app/Common/CommonInsert.dart';
 import 'package:billsmac_app/Page/community/DetailPage.dart';
+import 'package:billsmac_app/Widget/photo_crop.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 ///Author:chiuhol
@@ -19,6 +23,8 @@ class _CommunityManageState extends State<CommunityManage> {
   int _pageIndex = 1;
   String _query = "";
   bool _done = false;
+
+  String _thumbnail = "";//文章缩略图URL
 
   TextEditingController _searchController = TextEditingController();
   bool _cleanStatus = false;
@@ -62,7 +68,7 @@ class _CommunityManageState extends State<CommunityManage> {
   }
 
   @protected
-  _updateArticle(id,msg,isUpdate)async{
+  _updateArticle(String id,Map msg,bool isUpdate,bool isRecommend)async{
     try {
       BaseOptions options = BaseOptions(
           method: "patch");
@@ -73,12 +79,17 @@ class _CommunityManageState extends State<CommunityManage> {
         if (mounted) {
           setState(() {
             if(isUpdate){
+              CommonUtil.showMyToast("更新成功");
               _articleLst.forEach((items){
                 if(items["_id"] == id){
-                  items["title"] = msg["title"];
-                  items["subTitle"] = msg["subTitle"];
-                  items["content"] = msg["content"];
-                  items["recommend"] = msg["recommend"];
+                  if(isRecommend){
+                    items["recommend"] = !items["recommend"];
+                  }else{
+                    items["title"] = msg["title"];
+                    items["title"] = msg["title"];
+                    items["content"] = msg["content"];
+                    items["thumbnail"] = msg["thumbnail"];
+                  }
                 }
               });
             }
@@ -109,6 +120,7 @@ class _CommunityManageState extends State<CommunityManage> {
       if (response.data["status"] == 200) {
         if (mounted) {
           setState(() {
+            CommonUtil.showMyToast("发布成功");
             _articleLst.add(response.data["data"]["acticle"]);
           });
         }
@@ -122,39 +134,47 @@ class _CommunityManageState extends State<CommunityManage> {
   TextEditingController _titleController = TextEditingController();
   TextEditingController _subTitleController = TextEditingController();
 
+  bool updateStatus = false;
   @protected
-  _addArticle(msg) {
-    _contentController.clear();
-    _titleController.clear();
-    _subTitleController.clear();
+  _addArticle(msg,bool updateStatus) {
+    if(msg != "thumbnail"){
+      _contentController.clear();
+      _titleController.clear();
+      _subTitleController.clear();
+    }
     showModalBottomSheet(
         backgroundColor: MyColors.white_fe,
         context: context,
         builder: (BuildContext context) {
-          return Stack(children: <Widget>[
-            Container(
-                height: 15, width: double.infinity, color: Colors.black54),
-            Container(
-                child: bottomSheet(msg,_contentController,_titleController,_subTitleController),
-                decoration: BoxDecoration(
-                    color: MyColors.white_fe,
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(15),
-                        topRight: Radius.circular(15))))
-          ]);
+          return StatefulBuilder(
+            builder: (context,state){
+              return Stack(children: <Widget>[
+                Container(
+                    height: 15, width: double.infinity, color: Colors.black54),
+                Container(
+                    child: bottomSheet(msg,_contentController,_titleController,_subTitleController),
+                    decoration: BoxDecoration(
+                        color: MyColors.white_fe,
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(15),
+                            topRight: Radius.circular(15))))
+              ]);
+            },
+          );
         }).then((value) {
       if (value != null) {
         Map msg = {
           "title":value["title"],
           "subTitle":value["subTitle"],
-          "content":value["content"]
+          "content":value["content"],
+          "thumbnail":_thumbnail
         };
         if(value["type"] == "发布"){
           print("发布");
           _newArticle(msg);
         }else{
           print("更新");
-          _updateArticle(value["id"], msg,true);
+          _updateArticle(value["id"], msg,true,false);
         }
       }
     });
@@ -163,10 +183,10 @@ class _CommunityManageState extends State<CommunityManage> {
   Widget bottomSheet(msg,TextEditingController _contentController,TextEditingController _titleController, TextEditingController _subTitleController) {
     String _title = "新建社区文章";
     String _action = "发布";
-    if(msg != ''){
-      _contentController.text = msg["content"];
-      _titleController.text = msg["title"];
-      _subTitleController.text = msg["subTitle"];
+    if(updateStatus){
+      _contentController.text = res["content"];
+      _titleController.text = res["title"];
+      _subTitleController.text = res["subTitle"];
       _title = "修改社区文章";
       _action = "修改";
     }
@@ -205,8 +225,8 @@ class _CommunityManageState extends State<CommunityManage> {
                             return;
                           }
                           Navigator.of(context).pop({
-                            "type":msg == ''?"发布":"修改",
-                            "id":msg["_id"],
+                            "type":updateStatus == false?"发布":"修改",
+                            "id":updateStatus == false?"":res["_id"],
                             "title":_titleController.text,
                             "subTitle":_subTitleController.text,
                             "content":_contentController.text,
@@ -227,62 +247,152 @@ class _CommunityManageState extends State<CommunityManage> {
                       fontSize: MyFonts.f_14))),
           Container(width: double.infinity, height: 8, color: MyColors.grey_f6),
           SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                Padding(
-                    padding: EdgeInsets.only(left: 18, right: 18),
-                    child: TextField(
-                        controller: _titleController,
-                        maxLines: 2,
-                        maxLength: 20,
-                        cursorColor: MyColors.orange_68,
-                        decoration: InputDecoration(
-                          hintText: "请输入文章标题",
-                          hintStyle: TextStyle(
-                            fontSize: MyFonts.f_15,
-                            color: MyColors.grey_cb,
-                          ),
-                          border: InputBorder.none,
-                        ))
-                ),
-                Container(width: double.infinity, height: 3, color: MyColors.grey_f6),
-                Padding(
-                    padding: EdgeInsets.only(left: 18, right: 18),
-                    child: TextField(
-                        controller: _subTitleController,
-                        maxLines: 2,
-                        maxLength: 20,
-                        cursorColor: MyColors.orange_68,
-                        decoration: InputDecoration(
-                          hintText: "请输入文章副标题（可空）",
-                          hintStyle: TextStyle(
-                            fontSize: MyFonts.f_15,
-                            color: MyColors.grey_cb,
-                          ),
-                          border: InputBorder.none,
-                        ))
-                ),
-                Container(width: double.infinity, height: 3, color: MyColors.grey_f6),
-                Padding(
-                    padding: EdgeInsets.only(left: 18, right: 18),
-                    child: TextField(
-                        controller: _contentController,
-                        maxLines: 10,
-                        maxLength: 300,
-                        cursorColor: MyColors.orange_68,
-                        decoration: InputDecoration(
-                          hintText: "请输入文章内容",
-                          hintStyle: TextStyle(
-                            fontSize: MyFonts.f_15,
-                            color: MyColors.grey_cb,
-                          ),
-                          border: InputBorder.none,
-                        ))
-                )
-              ]
-            )
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Padding(
+                        padding: EdgeInsets.only(left: 18, right: 18),
+                        child: TextField(
+                            controller: _titleController,
+                            maxLines: 2,
+                            maxLength: 20,
+                            cursorColor: MyColors.orange_68,
+                            decoration: InputDecoration(
+                              hintText: "请输入文章标题",
+                              hintStyle: TextStyle(
+                                fontSize: MyFonts.f_15,
+                                color: MyColors.grey_cb,
+                              ),
+                              border: InputBorder.none,
+                            ))
+                    ),
+                    Container(width: double.infinity, height: 3, color: MyColors.grey_f6),
+                    Padding(
+                        padding: EdgeInsets.only(left: 18, right: 18),
+                        child: TextField(
+                            controller: _subTitleController,
+                            maxLines: 2,
+                            maxLength: 20,
+                            cursorColor: MyColors.orange_68,
+                            decoration: InputDecoration(
+                              hintText: "请输入文章副标题（可空）",
+                              hintStyle: TextStyle(
+                                fontSize: MyFonts.f_15,
+                                color: MyColors.grey_cb,
+                              ),
+                              border: InputBorder.none,
+                            ))
+                    ),
+                    Container(width: double.infinity, height: 3, color: MyColors.grey_f6),
+                    Padding(
+                        padding: EdgeInsets.only(left: 18, right: 18),
+                        child: TextField(
+                            controller: _contentController,
+                            maxLines: 6,
+                            maxLength: 300,
+                            cursorColor: MyColors.orange_68,
+                            decoration: InputDecoration(
+                              hintText: "请输入文章内容",
+                              hintStyle: TextStyle(
+                                fontSize: MyFonts.f_15,
+                                color: MyColors.grey_cb,
+                              ),
+                              border: InputBorder.none,
+                            ))
+                    ),
+                    Container(width: double.infinity, height: 3, color: MyColors.grey_f6),
+                    GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: (){
+                          _openGallery();
+                        },
+                        child: Container(
+                            padding: EdgeInsets.only(top: 20),
+                            margin: EdgeInsets.only(top: 20,left: 20),
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.all(Radius.circular(10)),
+                                border: Border.all(color: MyColors.orange_68,width: 1)
+                            ),
+                            child: _thumbnail != ""?Image.network("http://$_thumbnail",fit: BoxFit.fill):Center(
+                                child: Column(
+                                    children: <Widget>[
+                                      Icon(Icons.add,size: 24,color: MyColors.grey_99),
+                                      Text(
+                                          "点击上传图片",style: TextStyle(
+                                          color: MyColors.grey_99,
+                                          fontSize: MyFonts.f_12
+                                      )
+                                      )
+                                    ]
+                                )
+                            ))
+                    )
+                  ]
+              )
           )
         ]));
+  }
+
+  ///打开个人相册
+  @protected
+  _openGallery() {
+    ImagePicker.pickImage(source: ImageSource.gallery).then(_cropPhotoAndSave);
+  }
+
+  ///裁剪图片并将图片返回展示到个人信息页
+  @protected
+  _cropPhotoAndSave(imageFile) {
+    print("路径" + imageFile.toString());
+    if (imageFile != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PhotoCrop(imageFile),
+        ),
+      ).then((Object result) {
+        if (result != null) {
+          Map<String, dynamic> map = result;
+          if (mounted) {
+            setState(() {
+              String _avatarPath = map['avatarPath'];
+              _updateAvatarToDB(imageFile);
+            });
+          }
+        }
+      });
+    }
+  }
+
+  @protected
+  _updateAvatarToDB(File image)async{
+    try {
+      String path = image.path;
+      var name = path.substring(path.lastIndexOf("/") + 1, path.length);
+      var suffix = name.substring(name.lastIndexOf(".") + 1, name.length);
+
+      FormData formData = new FormData.from({
+        "file": new UploadFileInfo(image, name,
+            contentType: ContentType.parse("image/$suffix"))
+      });
+      BaseOptions options = BaseOptions(method: "post");
+      var dio = new Dio(options);
+      var response = await dio.post(Address.uploadPhoto(),data: formData);
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        if (mounted) {
+          setState(() {
+            _thumbnail = response.data["data"]["url"];
+            CommonUtil.closePage(context);
+            _addArticle("thumbnail",updateStatus);
+          });
+        }
+      }
+    } catch (err) {
+      print(err.toString());
+      CommonUtil.showMyToast("系统开小差了~");
+    }
   }
 
   @override
@@ -299,7 +409,9 @@ class _CommunityManageState extends State<CommunityManage> {
                         GestureDetector(
                             behavior: HitTestBehavior.translucent,
                             onTap: () {
-                              _addArticle("");
+                              _thumbnail = "";
+                              updateStatus = false;
+                              _addArticle("",updateStatus);
                             },
                             child: Icon(Icons.add)),
                         Expanded(
@@ -411,7 +523,7 @@ class _CommunityManageState extends State<CommunityManage> {
   }
 
   SlidableController _articleController = SlidableController();
-
+  var res;
   Widget itemBuilder(BuildContext context, int index) {
     Map _article = _articleLst[index];
     return Padding(
@@ -476,10 +588,7 @@ class _CommunityManageState extends State<CommunityManage> {
                           ? ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: Image.network(
-                              "http://116.62.141.151" +
-                                  _article["thumbnail"]
-                                      .toString()
-                                      .substring(21),
+                                  "http://${_article["thumbnail"]}",
                               width: 80,
                               height: 60))
                           : Container()
@@ -500,7 +609,7 @@ class _CommunityManageState extends State<CommunityManage> {
                                   color: MyColors.white_ff,
                                   fontSize: MyFonts.f_18)))),
                   onTap: () {
-                    _updateArticle(_article["_id"],{"recommend":!_article["recommend"]},true);
+                    _updateArticle(_article["_id"],{"recommend":!_article["recommend"]},true,true);
                   })
             ],
             secondaryActions: <Widget>[
@@ -517,7 +626,10 @@ class _CommunityManageState extends State<CommunityManage> {
                                   color: MyColors.white_ff,
                                   fontSize: MyFonts.f_18)))),
                   onTap: () {
-                    _addArticle(_article);
+                    _thumbnail = "";
+                    updateStatus = true;
+                    res = _article;
+                    _addArticle(_article,updateStatus);
                   }),
               GestureDetector(
                   behavior: HitTestBehavior.translucent,
@@ -537,7 +649,7 @@ class _CommunityManageState extends State<CommunityManage> {
                         _article["status"] = !_article["status"];
                       });
                     }
-                    _updateArticle(_article["_id"],{"status":!_article["status"]},false);
+                    _updateArticle(_article["_id"],{"status":!_article["status"]},false,false);
                   })
             ]
         ));

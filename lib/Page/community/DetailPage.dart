@@ -6,6 +6,7 @@ import 'package:billsmac_app/Common/local/LocalStorage.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:http/http.dart' as http;
@@ -30,6 +31,7 @@ class _DetailPageState extends State<DetailPage> {
   int _focusNum = 0;
   int _browseNum = 0;
   int _goodsNum = 0;
+  String _content = "<h4>暂无内容</h4>";
 
   bool _isGoods = false;
   bool _isFocus = false;
@@ -67,6 +69,7 @@ class _DetailPageState extends State<DetailPage> {
         setState(() {
           _title = article["title"] ?? "";
           _subTitle = article["subTitle"] ?? "";
+          _content = article["content"] ?? "<h4>暂无内容</h4>";
           _focusNum = article["focusNum"] ?? 0;
           _browseNum = article["browseNum"] ?? 0;
           _goodsNum = article["goodsNum"] ?? 0;
@@ -81,7 +84,7 @@ class _DetailPageState extends State<DetailPage> {
         CommonUtil.showMyToast(jsonDecode(res.body)["message"]);
       }
     } catch (err) {
-      CommonUtil.showMyToast(err);
+      CommonUtil.showMyToast(err.toString());
     }
   }
 
@@ -416,6 +419,9 @@ class _DetailPageState extends State<DetailPage> {
                   child: Text(_subTitle,
                       style: TextStyle(
                           color: MyColors.black_44, fontSize: MyFonts.f_16))),
+              Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: Html(data: '<div>' + _content + '</div')),
               Padding(
                   padding: EdgeInsets.only(bottom: 12),
                   child: Row(

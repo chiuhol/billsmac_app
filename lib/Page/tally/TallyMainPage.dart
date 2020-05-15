@@ -395,7 +395,7 @@ class _TallyMainPageState extends State<TallyMainPage>
                 GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     onTap: () {
-                      CommonUtil.openPage(context, CalendarMainPage(chatContentLst: _chatContentLst));
+                      CommonUtil.openPage(context, CalendarMainPage());
                     },
                     child: Icon(IconData(0xe685, fontFamily: 'MyIcons'),
                         size: 26, color: MyColors.orange_67)),

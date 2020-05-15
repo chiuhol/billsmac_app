@@ -267,4 +267,9 @@ class Address {
   static String cancelCommentLike(String articleId){
     return '$host/communityActicles/$articleId/comments/cancelLikeComment';
   }
+
+  //获取某个时间段的流水信息
+  static String staticByTime(String chatroomId){
+    return '$host/chatroom/$chatroomId/chatContent/staticByTime';
+  }
 }

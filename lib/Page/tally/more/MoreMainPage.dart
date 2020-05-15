@@ -210,7 +210,7 @@ class _MoreMainPageState extends State<MoreMainPage> {
                           borderRadius: BorderRadius.all(Radius.circular(30))),
                     )
                   : ClipOval(
-                      child: Image.network(_objects["avatar"] ?? "",
+                      child: Image.network("http://${_objects["avatar"]}" ?? "",
                           width: 60, height: 60, fit: BoxFit.cover)),
               SizedBox(height: 8),
               Center(

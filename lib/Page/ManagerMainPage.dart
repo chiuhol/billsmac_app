@@ -75,7 +75,7 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
           ),
           new ListTile(
               title: new Text('修改密码'),
-              trailing: new Icon(Icons.arrow_right),
+              trailing: new Icon(Icons.chevron_right),
               onTap: () {
                 Navigator.of(context).pop();
                 if(mounted){
@@ -88,7 +88,7 @@ class _ManagerMainPageState extends State<ManagerMainPage> {
           new Divider(),
           new ListTile(
               title: new Text('退出登录'),
-              trailing: new Icon(Icons.arrow_right),
+              trailing: new Icon(Icons.chevron_right),
               onTap: () {
                 Navigator.of(context).pop();
                 CommonUtil.openPage(context, LoginPage());

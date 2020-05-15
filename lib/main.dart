@@ -133,7 +133,7 @@ class _MyAppState extends State<MyApp> {
         position: ToastPosition.bottom,
         backgroundColor: MyColors.button_bg_grey_deep,
       child: MaterialApp(
-        title: 'Flutter Demo',
+        title: '每日记账',
         routes: routes,
         theme: ThemeData(
           // This is the theme of your application.

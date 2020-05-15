@@ -76,7 +76,7 @@ class _LoginPageState extends State<LoginPage>
             CommonUtil.showMyToast(jsonDecode(res.body)["message"]);
           }
         } catch (err) {
-          CommonUtil.showMyToast("系统开小差了~");
+          CommonUtil.showMyToast(err.toString());
         }
       }else
         {
@@ -98,7 +98,7 @@ class _LoginPageState extends State<LoginPage>
               }
             }
           } catch (err) {
-            CommonUtil.showMyToast("系统开小差了~");
+            CommonUtil.showMyToast("用户名或密码不正确");
           }
         }
 

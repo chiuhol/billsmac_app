@@ -1,83 +1,62 @@
+import 'dart:convert';
+
 import 'package:billsmac_app/Common/CommonInsert.dart';
+import 'package:billsmac_app/Common/local/LocalStorage.dart';
+import 'package:dio/dio.dart';
 import 'package:table_calendar/table_calendar.dart';
+
+import 'package:mini_calendar/mini_calendar.dart';
+
+import '../TallyDetailPage.dart';
 
 ///Author:chiuhol
 ///2020-2-9
 
-// Example holidays
-final Map<DateTime, List> _holidays = {
-  DateTime(2019, 1, 1): ['New Year\'s Day'],
-  DateTime(2019, 1, 6): ['Epiphany'],
-  DateTime(2019, 2, 14): ['Valentine\'s Day'],
-  DateTime(2019, 4, 21): ['Easter Sunday'],
-  DateTime(2019, 4, 22): ['Easter Monday'],
-};
-
 class CalendarMainPage extends StatefulWidget {
-  final List chatContentLst;
-
-  CalendarMainPage({Key key, this.chatContentLst}) : super(key: key);
-
   @override
   _CalendarMainPageState createState() => _CalendarMainPageState();
 }
 
 class _CalendarMainPageState extends State<CalendarMainPage>
     with TickerProviderStateMixin {
-  Map<DateTime, List> _events;
-  List _selectedEvents;
-  AnimationController _animationController;
-  CalendarController _calendarController;
+
+  String _beginTime = "";//开始时间
+  String _endTime = "";//结束时间
+  String _beginTime2 = "";//开始时间2
+  String _endTime2 = "";//结束时间2
+  num _incomeTotle = 0;
+  num _expendTotle = 0;
+  List _chatContentLst = [];
 
   @protected
-  _getData() {
-    if (mounted) {
-      setState(() {
-        final _selectedDay = DateTime.now();
-        List _content = widget.chatContentLst;
-        print(_content);
-//        for (int i = 0; i < _content.length; i++) {
-//          int day = CommonUtil.getDuration(_content[i]["createdAt"]);
-//          _events[_selectedDay] = ['a'];
-////          _events = {
-////            _selectedDay.subtract(Duration(days: 30)): ['Event A0', 'Event B0', 'Event C0'],
-////            _selectedDay.subtract(Duration(
-////                days: CommonUtil.getDuration(
-////                    widget.chatContentLst[i]["createdAt"]))):[widget.chatContentLst[i]["rightcontent"]]
-////          };
-//        }
-        Map _a;
-        _a[DateTime.now()] = "1";
-//        _events[_selectedDay] = ['a'];
-        print(_a);
-
-//        _events = {
-//          _selectedDay.subtract(Duration(days: 30)): ['Event A0', 'Event B0', 'Event C0'],
-//          _selectedDay.subtract(Duration(days: 27)): ['Event A1'],
-//          _selectedDay.subtract(Duration(days: 20)): ['Event A2', 'Event B2', 'Event C2', 'Event D2'],
-//          _selectedDay.subtract(Duration(days: 16)): ['Event A3', 'Event B3'],
-//          _selectedDay.subtract(Duration(days: 10)): ['Event A4', 'Event B4', 'Event C4'],
-//          _selectedDay.subtract(Duration(days: 4)): ['Event A5', 'Event B5', 'Event C5'],
-//          _selectedDay.subtract(Duration(days: 2)): ['Event A6', 'Event B6'],
-//          _selectedDay: ['Event A7', 'Event B7', 'Event C7', 'Event D7'],
-//          _selectedDay.add(Duration(days: 1)): ['Event A8', 'Event B8', 'Event C8', 'Event D8'],
-//          _selectedDay.add(Duration(days: 3)): Set.from(['Event A9', 'Event A9', 'Event B9']).toList(),
-//          _selectedDay.add(Duration(days: 7)): ['Event A10', 'Event B10', 'Event C10'],
-//          _selectedDay.add(Duration(days: 11)): ['Event A11', 'Event B11'],
-//          _selectedDay.add(Duration(days: 17)): ['Event A12', 'Event B12', 'Event C12', 'Event D12'],
-//          _selectedDay.add(Duration(days: 22)): ['Event A13', 'Event B13'],
-//          _selectedDay.add(Duration(days: 26)): ['Event A14', 'Event B14', 'Event C14'],
-//        };
-
-
-        _selectedEvents = _events[_selectedDay] ?? [];
-        _calendarController = CalendarController();
-
-        _animationController = AnimationController(
-            vsync: this, duration: const Duration(milliseconds: 400));
-
-        _animationController.forward();
-      });
+  _getChatContent(beginTime,endTime)async{
+    String _chatroomId = await LocalStorage.get("chatroomId").then((result) {
+      return result;
+    });
+    try {
+      BaseOptions options =
+      BaseOptions(method: "get", queryParameters: {"beginTime": beginTime,"endTime":endTime});
+      var dio = new Dio(options);
+      var response = await dio.get(Address.staticByTime(_chatroomId));
+      print(response.data.toString());
+      if (response.data["status"] == 200) {
+        if (mounted) {
+          setState(() {
+            _chatContentLst = response.data["data"]["res"];
+            if(_chatContentLst.length!=0){
+              for(int i=0;i<_chatContentLst.length;i++){
+                if(_chatContentLst[i]["amountType"] == "expend"){
+                  _expendTotle+=double.parse(_chatContentLst[i]["amount"]);
+                }else{
+                  _incomeTotle+=double.parse(_chatContentLst[i]["amount"]);
+                }
+              }
+            }
+          });
+        }
+      }
+    } catch (err) {
+      CommonUtil.showMyToast("系统开小差了~");
     }
   }
 
@@ -85,27 +64,6 @@ class _CalendarMainPageState extends State<CalendarMainPage>
   void initState() {
     super.initState();
 
-    print(widget.chatContentLst);
-    _getData();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    _calendarController.dispose();
-    super.dispose();
-  }
-
-  void _onDaySelected(DateTime day, List events) {
-    print('CALLBACK: _onDaySelected');
-    setState(() {
-      _selectedEvents = events;
-    });
-  }
-
-  void _onVisibleDaysChanged(
-      DateTime first, DateTime last, CalendarFormat format) {
-    print('CALLBACK: _onVisibleDaysChanged');
   }
 
   @override
@@ -122,230 +80,162 @@ class _CalendarMainPageState extends State<CalendarMainPage>
             width: double.infinity,
             height: double.infinity,
             color: MyColors.grey_f9,
-            child: Column(mainAxisSize: MainAxisSize.max, children: <Widget>[
-              _buildTableCalendarWithBuilders(),
-              const SizedBox(height: 8.0),
-              _buildButtons(),
-              const SizedBox(height: 8.0),
-              Expanded(child: _buildEventList()),
-            ])));
-  }
-
-  Widget _buildTableCalendar() {
-    return TableCalendar(
-      calendarController: _calendarController,
-      events: _events,
-      holidays: _holidays,
-      startingDayOfWeek: StartingDayOfWeek.monday,
-      calendarStyle: CalendarStyle(
-        selectedColor: Colors.deepOrange[400],
-        todayColor: Colors.deepOrange[200],
-        markersColor: Colors.brown[700],
-        outsideDaysVisible: false,
-      ),
-      headerStyle: HeaderStyle(
-        formatButtonTextStyle:
-            TextStyle().copyWith(color: Colors.white, fontSize: 15.0),
-        formatButtonDecoration: BoxDecoration(
-          color: Colors.deepOrange[400],
-          borderRadius: BorderRadius.circular(16.0),
-        ),
-      ),
-      onDaySelected: _onDaySelected,
-      onVisibleDaysChanged: _onVisibleDaysChanged,
-    );
-  }
-
-  Widget _buildTableCalendarWithBuilders() {
-    return TableCalendar(
-//      locale: 'zh_CN',
-      calendarController: _calendarController,
-      events: _events,
-      holidays: _holidays,
-      initialCalendarFormat: CalendarFormat.month,
-      formatAnimation: FormatAnimation.slide,
-      startingDayOfWeek: StartingDayOfWeek.sunday,
-      availableGestures: AvailableGestures.all,
-      availableCalendarFormats: const {
-        CalendarFormat.month: '',
-        CalendarFormat.week: '',
-      },
-      calendarStyle: CalendarStyle(
-        outsideDaysVisible: false,
-        weekendStyle: TextStyle().copyWith(color: Colors.blue[800]),
-        holidayStyle: TextStyle().copyWith(color: Colors.blue[800]),
-      ),
-      daysOfWeekStyle: DaysOfWeekStyle(
-        weekendStyle: TextStyle().copyWith(color: Colors.blue[600]),
-      ),
-      headerStyle: HeaderStyle(
-        centerHeaderTitle: true,
-        formatButtonVisible: false,
-      ),
-      builders: CalendarBuilders(
-        selectedDayBuilder: (context, date, _) {
-          return FadeTransition(
-            opacity: Tween(begin: 0.0, end: 1.0).animate(_animationController),
-            child: Container(
-              margin: const EdgeInsets.all(4.0),
-              padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-              color: Colors.deepOrange[300],
-              width: 100,
-              height: 100,
-              child: Text(
-                '${date.day}',
-                style: TextStyle().copyWith(fontSize: 16.0),
-              ),
-            ),
-          );
-        },
-        todayDayBuilder: (context, date, _) {
-          return Container(
-            margin: const EdgeInsets.all(4.0),
-            padding: const EdgeInsets.only(top: 5.0, left: 6.0),
-            color: Colors.amber[400],
-            width: 100,
-            height: 100,
-            child: Text(
-              '${date.day}',
-              style: TextStyle().copyWith(fontSize: 16.0),
-            ),
-          );
-        },
-        markersBuilder: (context, date, events, holidays) {
-          final children = <Widget>[];
-
-          if (events.isNotEmpty) {
-            children.add(
-              Positioned(
-                right: 1,
-                bottom: 1,
-                child: _buildEventsMarker(date, events),
-              ),
-            );
-          }
-
-          if (holidays.isNotEmpty) {
-            children.add(
-              Positioned(
-                right: -2,
-                top: -2,
-                child: _buildHolidaysMarker(),
-              ),
-            );
-          }
-
-          return children;
-        },
-      ),
-      onDaySelected: (date, events) {
-        _onDaySelected(date, events);
-        _animationController.forward(from: 0.0);
-      },
-      onVisibleDaysChanged: _onVisibleDaysChanged,
-    );
-  }
-
-  Widget _buildEventsMarker(DateTime date, List events) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      decoration: BoxDecoration(
-        shape: BoxShape.rectangle,
-        color: _calendarController.isSelected(date)
-            ? Colors.brown[500]
-            : _calendarController.isToday(date)
-                ? Colors.brown[300]
-                : Colors.blue[400],
-      ),
-      width: 16.0,
-      height: 16.0,
-      child: Center(
-        child: Text(
-          '${events.length}',
-          style: TextStyle().copyWith(
-            color: Colors.white,
-            fontSize: 12.0,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHolidaysMarker() {
-    return Icon(
-      Icons.add_box,
-      size: 20.0,
-      color: Colors.blueGrey[800],
-    );
-  }
-
-  Widget _buildButtons() {
-    final dateTime = _events.keys.elementAt(_events.length - 2);
-
-    return Column(
-      children: <Widget>[
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            RaisedButton(
-              child: Text('Month'),
-              onPressed: () {
-                setState(() {
-                  _calendarController.setCalendarFormat(CalendarFormat.month);
-                });
-              },
-            ),
-            RaisedButton(
-              child: Text('2 weeks'),
-              onPressed: () {
-                setState(() {
-                  _calendarController
-                      .setCalendarFormat(CalendarFormat.twoWeeks);
-                });
-              },
-            ),
-            RaisedButton(
-              child: Text('Week'),
-              onPressed: () {
-                setState(() {
-                  _calendarController.setCalendarFormat(CalendarFormat.week);
-                });
-              },
-            ),
-          ],
-        ),
-        const SizedBox(height: 8.0),
-        RaisedButton(
-          child: Text(
-              'Set day ${dateTime.day}-${dateTime.month}-${dateTime.year}'),
-          onPressed: () {
-            _calendarController.setSelectedDay(
-              DateTime(dateTime.year, dateTime.month, dateTime.day),
-              runCallback: true,
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEventList() {
-    return ListView(
-      children: _selectedEvents
-          .map((event) => Container(
-                decoration: BoxDecoration(
-                  border: Border.all(width: 0.8),
-                  borderRadius: BorderRadius.circular(12.0),
+            child: SingleChildScrollView(
+                physics: BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics()),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.max, children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.only(top: 20,left: 20,right: 20),
+                  child: Text("Tip：选择日期查看时间段流水，可连选~",style: TextStyle(
+                      color: MyColors.orange_68,
+                      fontSize: MyFonts.f_14
+                  ))
                 ),
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                child: ListTile(
-                  title: Text(event.toString()),
-                  onTap: () => print('$event tapped!'),
+                Container(
+                    padding: EdgeInsets.only(left: 20,right: 20,top: 8),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(20))
+                    ),
+                    child: MonthPageView(
+                      padding: EdgeInsets.all(1),
+                      scrollDirection: Axis.horizontal,// 水平滑动或者竖直滑动
+                      option: MonthOption(
+                        maxDay: DateDay.now(),
+                        enableContinuous: true,// 单选、连选控制
+                        marks: {
+//                          DateDay.now().copyWith(day: 1): '111',
+//                          DateDay.now().copyWith(day: 5): '222',
+//                          DateDay.now().copyWith(day: 13): '333',
+//                          DateDay.now().copyWith(day: 19): '444',
+//                          DateDay.now().copyWith(day: 26): '444',
+                        },
+                      ),
+                      showWeekHead: true, // 显示星期头部
+                      onContinuousSelectListen: (firstDay, endFay) {
+                        if(mounted){
+                          setState(() {
+                            if(firstDay != null){
+                              _beginTime2 = firstDay.toString();
+                              _beginTime = firstDay.toString().substring(4);
+                              if(endFay == null){
+                                _getChatContent(firstDay.toString(), firstDay.add(Duration(days: 1)).toString());
+                              }else{
+                                _endTime2 = endFay.toString();
+                                _endTime = endFay.toString().substring(4);
+                                endFay.add(Duration(days: 1));
+                                _getChatContent(firstDay.toString(), endFay.toString());
+                              }
+                            }
+                          });
+                        }
+                      },// 连选回调
+                      onMonthChange: (month) {
+                      },// 月份更改回调
+                      onDaySelected: (day, data) {
+                        print(day);
+                        print(data);
+                      },// 日期选中会回调
+                      onCreated: (controller){
+                      }, // 控制器回调
+                    )
                 ),
-              ))
-          .toList(),
+                Container(
+                    margin: EdgeInsets.only(left: 20,right: 20,top: 10,bottom: 30),
+                    decoration: BoxDecoration(
+                        color: MyColors.white,
+                        borderRadius: BorderRadius.all(Radius.circular(20))
+                    ),
+                  child: _chatContentLst.length == 0?Padding(padding: EdgeInsets.only(top: 50,bottom: 50),child: Center(child: Text("一滴水都没有~",style: TextStyle(
+                      color: MyColors.grey_99,
+                      fontSize: MyFonts.f_16
+                  )))):Column(
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.only(top: 10,bottom: 10,left: 8,right: 8),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(_beginTime+"-"+_endTime,style: TextStyle(
+                                  color: MyColors.grey_99,
+                                  fontSize: MyFonts.f_14
+                              )),
+                              Row(
+                                  children: <Widget>[
+                                    Text("收入："+_incomeTotle.toString(),style: TextStyle(
+                                        color: MyColors.grey_99,
+                                        fontSize: MyFonts.f_14
+                                    )),
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 8,right: 8),
+                                      child: Container(
+                                          width: 1,
+                                          height: 15,
+                                          color: MyColors.grey_99
+                                      )
+                                    ),
+                                    Text("支出："+_expendTotle.toString(),style: TextStyle(
+                                        color: MyColors.grey_99,
+                                        fontSize: MyFonts.f_14
+                                    ))
+                                  ]
+                              )
+                            ])
+                      ),
+                      SeparatorWidget(),
+                      chatContentWidget()
+                    ]
+                  )
+                )
+              ])
+            )));
+  }
+
+  Widget chatContentWidget(){
+    return ListView.builder(itemBuilder: itemBuilder,itemCount: _chatContentLst.length,shrinkWrap: true,physics: NeverScrollableScrollPhysics());
+  }
+
+  Widget itemBuilder(BuildContext context,int index){
+    Map _chatcontent = _chatContentLst[index];
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: (){
+//        CommonUtil.openPage(context, TallyDetailPage(detail: _chatcontent))
+//            .then((value) {
+//          if (value != null && value == "success") {
+//            _getChatContent(_beginTime2, _endTime2);
+//          }
+//        });
+      },
+      child: Padding(
+          padding: EdgeInsets.only(top: 10,bottom: 10,left: 8,right: 8),
+          child: Column(children: <Widget>[
+            Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(_chatcontent["typeStr"]??"",style: TextStyle(
+                      color: MyColors.black_1a,
+                      fontSize: MyFonts.f_16
+                  )),
+                  Row(
+                      children: <Widget>[
+                        Text(_chatcontent["amountType"] == "expend"?"-":"+",style: TextStyle(
+                            color: MyColors.black_1a,
+                            fontSize: MyFonts.f_16
+                        )),
+                        Text(_chatcontent["amount"]??"",style: TextStyle(
+                            color: MyColors.black_1a,
+                            fontSize: MyFonts.f_16
+                        ))
+                      ]
+                  )
+                ]
+            ),
+            SizedBox(height: 8),
+            index == _chatContentLst.length-1?Container():SeparatorWidget()
+          ])
+      )
     );
   }
 }
