@@ -9,6 +9,7 @@ import 'package:billsmac_app/Common/style/colors.dart';
 import 'package:billsmac_app/Common/style/fonts.dart';
 
 import '../BaseCommon.dart';
+import 'PageRoute.dart';
 //import 'package:flutter_statusbar_manager/flutter_statusbar_manager.dart';
 
 class CommonUtil {
@@ -29,8 +30,15 @@ class CommonUtil {
 //  }
 
   static openPage(BuildContext context, Widget widget) {
+
     return Navigator.push(
         context, new MaterialPageRoute(builder: (context) => widget));
+  }
+
+  static openPageInSpecial(BuildContext context, Widget widget){
+    return Navigator.of(context).push(CirclePageRoute(builder: (context) {
+      return widget;
+    }));
   }
 
   static closePage(BuildContext context) {
